@@ -71,3 +71,45 @@ Cada `Paso` contiene un número, una descripción, los identificadores de
 vértices y aristas para destacar, y un detalle tipado propio del algoritmo.
 La interfaz puede mostrar los conteos a partir de `Entrada.grafo`; las métricas
 que correspondan, como el peso total, pertenecen a `Resultado.solucion`.
+
+### Separación de responsabilidades (issue #16)
+
+Cada responsabilidad tiene una clase base abstracta en su propio módulo:
+
+| Componente | Contrato | Responsabilidad |
+| --- | --- | --- |
+| Lectura | `LectorArchivo.leer(ruta: str \| Path) -> str` | Obtener el texto del archivo, sin interpretarlo como grafo. |
+| Procesamiento | `ProcesadorGrafo.procesar(contenido: str) -> Grafo` | Validar e interpretar el texto para construir el grafo, sin acceder a archivos. |
+| Resolución | `Algoritmo.ejecutar(entrada: Entrada) -> Resultado` | Verificar las condiciones del algoritmo y calcular su solución y pasos. |
+| Visualización | `Visualizador.mostrar_grafo(grafo)` y `mostrar_resultado(grafo, resultado)` | Presentar el grafo original y los resultados ya calculados, sin ejecutar algoritmos. |
+
+Los módulos son [`lectura.py`](arboles_de_red/lectura.py),
+[`procesamiento.py`](arboles_de_red/procesamiento.py),
+[`algoritmo.py`](arboles_de_red/algoritmo.py) y
+[`visualizacion.py`](arboles_de_red/visualizacion.py). Todos los contratos se
+exportan desde `arboles_de_red`.
+
+La aplicación coordinará los componentes a través de estas interfaces:
+
+```python
+# lector, procesador, algoritmo y visualizador son implementaciones concretas.
+contenido = lector.leer(ruta)
+grafo = procesador.procesar(contenido)
+visualizador.mostrar_grafo(grafo)
+resultado = algoritmo.ejecutar(Entrada(grafo, parametros))
+visualizador.mostrar_resultado(grafo, resultado)
+```
+
+`Visualizador[Solucion, Detalle]` utiliza los mismos tipos de solución y detalle
+que el algoritmo. El algoritmo solo recibe `Entrada` y devuelve `Resultado`;
+no conoce al lector, al procesador ni a la interfaz gráfica. Las condiciones
+de aplicación pertenecen al algoritmo, mientras que la validación del formato
+pertenece al procesador.
+
+Este issue define contratos y estructura modular. El acceso concreto a
+archivos, la codificación, las reglas y errores del CSV, la interfaz gráfica
+y los controles de recorrido se implementarán en sus respectivos issues.
+No se fija todavía cómo representar la dirección de las aristas en el CSV.
+[`tests/test_componentes.py`](tests/test_componentes.py) demuestra la integración
+mediante dobles en memoria y el algoritmo de ejemplo, sin implementar CSV ni
+una interfaz gráfica.
