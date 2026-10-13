@@ -19,6 +19,18 @@ Aristas individuales que conectan el mismo par de vértices. Pueden compartir di
 **Peso**:
 Valor numérico real y finito asociado a una arista; puede ser positivo, negativo o cero.
 
+**Entrada de algoritmo**:
+Grafo y parámetros tipados propios del algoritmo que se utilizarán en una ejecución.
+
+**Condiciones de aplicación**:
+Requisitos específicos del algoritmo que se verifican antes de resolver una entrada.
+
+**Paso de ejecución**:
+Decisión ordenada con descripción, referencias a vértices y aristas destacados, y un detalle propio del algoritmo.
+
+**Resultado de algoritmo**:
+Solución tipada propia del algoritmo y secuencia completa e inmutable de pasos. La solución contiene las métricas que correspondan, como el peso total.
+
 ## Decisiones acordadas
 
 | Decisión | Referencia en el código |
@@ -31,5 +43,10 @@ Valor numérico real y finito asociado a una arista; puede ser positivo, negativ
 | Un grafo puede tener componentes desconectados. Cada algoritmo verificará sus propias condiciones de aplicación antes de ejecutarse, según el [issue #3](https://github.com/camilamercad/arboles-de-red/issues/3). | [`Grafo`](./arboles_de_red/grafo.py#L56), [prueba de desconexión](./tests/test_grafo.py#L48) |
 | El modelo puede representar un grafo vacío. La validación del CSV deberá rechazarlo cuando se implementen los [issues #1](https://github.com/camilamercad/arboles-de-red/issues/1) y [#2](https://github.com/camilamercad/arboles-de-red/issues/2). | [Prueba del grafo vacío](./tests/test_grafo.py#L86); validación CSV pendiente |
 | La versión mínima es Python 3.14. Pueden incorporarse dependencias externas, pero la lógica de los algoritmos se implementará en el proyecto. Este modelo utiliza la biblioteca estándar. | [Configuración del proyecto](./pyproject.toml#L5), [modelo](./arboles_de_red/grafo.py) |
+| Todos los algoritmos comparten una clase base genérica y reciben `Entrada` con `Grafo` y parámetros propios tipados. También son tipados la solución y el detalle de los pasos. | [`Algoritmo` y `Entrada`](./arboles_de_red/algoritmo.py), [ejemplo de implementación](./tests/test_algoritmo.py) |
+| `es_aplicable` devuelve solamente `bool`. `ejecutar` verifica nuevamente las condiciones antes de resolver y, si falla, lanza `AlgoritmoNoAplicableError` con el motivo. Cada algoritmo define sus condiciones y resolución. | [Comprobación y ejecución](./arboles_de_red/algoritmo.py), [pruebas de rechazo](./tests/test_algoritmo.py) |
+| El resultado contiene la solución propia del algoritmo y una secuencia completa e inmutable de pasos. Cada paso lleva número, descripción, identificadores de vértices y aristas destacados, y detalle tipado propio. | [`Resultado` y `Paso`](./arboles_de_red/algoritmo.py), [pruebas de inmutabilidad](./tests/test_algoritmo.py) |
+| Los conteos de vértices y aristas salen del `Grafo`. Las métricas como peso total se exponen, cuando corresponda, desde la solución tipada del algoritmo. | [`Grafo`](./arboles_de_red/grafo.py), [solución del ejemplo](./tests/test_algoritmo.py) |
+| Los seis algoritmos previstos se implementarán en sus issues. El contrato se verifica con una implementación mínima dentro de las pruebas. | [Ejemplo y pruebas](./tests/test_algoritmo.py), [issue #15](https://github.com/camilamercad/arboles-de-red/issues/15) |
 
-Estas decisiones concretan el [issue #14](https://github.com/camilamercad/arboles-de-red/issues/14). Los algoritmos y el lector de CSV todavía no están implementados; sus filas indican el contrato que deberán respetar.
+Estas decisiones concretan los [issues #14](https://github.com/camilamercad/arboles-de-red/issues/14) y [#15](https://github.com/camilamercad/arboles-de-red/issues/15). Los seis algoritmos y el lector de CSV todavía no están implementados; sus filas indican el contrato que deberán respetar.

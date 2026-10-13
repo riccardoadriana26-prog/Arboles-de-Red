@@ -52,3 +52,22 @@ Para ejecutar las pruebas:
 ```sh
 py -3.14 -m unittest discover -s tests -v
 ```
+
+### Contrato común de algoritmos (issue #15)
+
+Cada algoritmo hereda de `Algoritmo[Parametros, Solucion, Detalle]` y recibe una
+`Entrada(grafo, parametros)`. Los parámetros, la solución y el detalle de cada
+paso tienen tipos propios de ese algoritmo. Una implementación mínima se
+encuentra en [`tests/test_algoritmo.py`](tests/test_algoritmo.py).
+
+La aplicación puede llamar `es_aplicable(entrada)`, que devuelve `bool`, antes
+de iniciar la ejecución. `ejecutar(entrada)` vuelve a comprobar las condiciones:
+si no se cumplen, lanza `AlgoritmoNoAplicableError` con el motivo; si se cumplen,
+devuelve `Resultado(solucion, pasos)`. Cada implementación define
+`_motivo_inaplicabilidad` y `_resolver`, sin cambiar el mecanismo público.
+
+`Resultado.pasos` es una secuencia completa e inmutable en orden de ejecución.
+Cada `Paso` contiene un número, una descripción, los identificadores de
+vértices y aristas para destacar, y un detalle tipado propio del algoritmo.
+La interfaz puede mostrar los conteos a partir de `Entrada.grafo`; las métricas
+que correspondan, como el peso total, pertenecen a `Resultado.solucion`.
