@@ -1,0 +1,12 @@
+[project]
+name = "arboles-de-red"
+version = "0.1.0"
+description = "Modelo común de grafos para algoritmos de redes"
+requires-python = ">=3.14"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["arboles_de_red"]
