@@ -78,11 +78,13 @@ Cada algoritmo hereda de `Algoritmo[Parametros, Solucion, Detalle]` y recibe una
 paso tienen tipos propios de ese algoritmo. Una implementación mínima se
 encuentra en [`tests/test_algoritmo.py`](tests/test_algoritmo.py).
 
-La aplicación puede llamar `es_aplicable(entrada)`, que devuelve `bool`, antes
+La aplicación puede llamar `es_aplicable(entrada)`, que devuelve `bool`, y
+`motivo_inaplicabilidad(entrada)`, que devuelve un motivo o `None`, antes
 de iniciar la ejecución. `ejecutar(entrada)` vuelve a comprobar las condiciones:
 si no se cumplen, lanza `AlgoritmoNoAplicableError` con el motivo; si se cumplen,
-devuelve `Resultado(solucion, pasos)`. Cada implementación define
-`_motivo_inaplicabilidad` y `_resolver`, sin cambiar el mecanismo público.
+devuelve `Resultado(solucion, pasos)`. Cada implementación recibe sus condiciones
+y define `_resolver`; las implementaciones anteriores pueden conservar
+`_motivo_inaplicabilidad`, sin cambiar el mecanismo público.
 
 `Resultado.pasos` es una secuencia completa e inmutable en orden de ejecución.
 Cada `Paso` contiene un número, una descripción, los identificadores de
@@ -290,3 +292,69 @@ de campos se informa y se continúa con las siguientes.
 Si hay errores no se devuelve una entrada ni un grafo parcial, ni se modifican
 las cargas anteriores. Los ciclos entre actividades distintas y los componentes
 desconectados se conservan para comprobar la aplicabilidad en el issue #3.
+
+### Condiciones de aplicación (issue #3)
+
+Las condiciones pueden consultarse antes de disponer de la resolución concreta
+de cada algoritmo. `CondicionesAplicacion[Parametros]` expone
+`es_aplicable(entrada) -> bool` y
+`motivo_inaplicabilidad(entrada) -> str | None`. Una entrada compatible devuelve
+`True` y motivo `None`; una incompatible devuelve `False` y el primer motivo
+encontrado, sin modificar sus datos ni seleccionar otro algoritmo.
+
+| Algoritmo | Condiciones reutilizables | Requisitos |
+| --- | --- | --- |
+| Prim y Kruskal | `CondicionesArbolExpansion` | Grafo no vacío, no dirigido y conexo, con peso en todas las aristas. Se aceptan pesos negativos y cero. Un vértice aislado impide la conectividad si hay otros vértices; un único vértice constituye una entrada válida. |
+| Dijkstra | `CondicionesDijkstra` | Pesos no negativos y `ParametrosDijkstra(origen, destino=None)`, con terminales existentes. Admite aristas dirigidas y no dirigidas, incluso mezcladas, y vértices inalcanzables. |
+| Ford–Fulkerson | `CondicionesFlujoMaximo` | Red dirigida con capacidades no negativas y `ParametrosFlujoMaximo(fuente, sumidero)`, ambos existentes y distintos. No exige un camino entre los terminales ni flujo positivo. |
+| CPM | `CondicionesCPM` | AON no vacío, dirigido y sin ciclos; `ParametrosCPM` con una duración real finita no negativa por actividad. |
+| PERT | `CondicionesPERT` | AON no vacío, dirigido y sin ciclos; `ParametrosPERT` con una tripleta completa por actividad y `0 <= optimista <= mas_probable <= pesimista`, con valores reales finitos. |
+
+`Grafo` ya garantiza que los pesos presentes sean reales finitos. Las condiciones
+rechazan pesos ausentes cuando el algoritmo los necesita. Para CPM/PERT, los
+mapas deben contener exactamente los identificadores de las actividades: se
+rechazan datos faltantes, datos de actividades inexistentes e identificadores
+de aristas usados como claves. Las claves son únicas por definición del mapa;
+las actividades y columnas repetidas en CSV se rechazan en la validación del #2.
+
+CPM/PERT admiten actividades independientes y redes de una sola actividad sin
+aristas. No obtienen duraciones ni estimaciones a partir de los pesos de las
+precedencias, ni calculan tiempos esperados al validar. Se conservan las aristas
+paralelas; la detección de ciclos las cuenta individualmente y no las confunde
+con un ciclo. El signo y el orden de los tiempos se comprueban sobre los números
+recibidos, antes de cualquier redondeo.
+
+```python
+from arboles_de_red import (
+    CondicionesDijkstra, Entrada, ParametrosDijkstra, ProcesadorConexionesCSV,
+)
+
+grafo = ProcesadorConexionesCSV().procesar(
+    "origen,destino,peso,dirigida\nA,B,2,true\nC,B,1,true\n"
+)
+entrada = Entrada(grafo, ParametrosDijkstra("A", "C"))
+condiciones = CondicionesDijkstra()
+assert condiciones.es_aplicable(entrada) is True
+assert condiciones.motivo_inaplicabilidad(entrada) is None
+assert condiciones.vertices_inalcanzables(entrada) == ("C",)
+```
+
+`vertices_inalcanzables` devuelve una tupla en el orden de los vértices del grafo
+y respeta la dirección de cada conexión. Es información para presentar al
+usuario, no un rechazo de Dijkstra; si los parámetros son inválidos, la consulta
+lanza `AlgoritmoNoAplicableError`. No calcula distancias ni una ruta mínima.
+
+Las implementaciones de algoritmos pueden pasar sus condiciones al constructor
+de `Algoritmo`, por ejemplo mediante `super().__init__(CondicionesCPM())`, y
+definir `_resolver`. `es_aplicable`, `motivo_inaplicabilidad` y `ejecutar` usan
+las mismas condiciones. Una consulta previa exitosa no evita la nueva
+comprobación de `ejecutar`, que lanza `AlgoritmoNoAplicableError(motivo)` antes
+de resolver si la entrada no aplica. Si no se proporcionan condiciones ni se
+define `_motivo_inaplicabilidad`, se rechaza la ejecución.
+
+El cálculo de las soluciones y sus pasos corresponde al issue #6; este cambio
+implementa sus comprobaciones previas. El código existente ya usa actividades
+en vértices; no había resolutores CPM/PERT anteriores que migrar en esta rama.
+Las pruebas usan casos representativos y los ejemplos CSV del repositorio.
+Las redes exactas de la bibliografía se incorporarán cuando se disponga del
+material, según lo acordado para esta implementación.

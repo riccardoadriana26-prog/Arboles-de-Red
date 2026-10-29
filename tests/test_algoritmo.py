@@ -72,6 +72,17 @@ class AlgoritmoEjemplo(Algoritmo[ParametrosEjemplo, SolucionEjemplo, DetalleEjem
 
 
 class ContratoAlgoritmoTests(unittest.TestCase):
+    def test_el_motivo_es_consultable_sin_resolver(self):
+        valida = Entrada(self.grafo, ParametrosEjemplo("A"))
+        invalida = Entrada(self.grafo, ParametrosEjemplo("C"))
+
+        self.assertIsNone(self.algoritmo.motivo_inaplicabilidad(valida))
+        self.assertEqual(
+            self.algoritmo.motivo_inaplicabilidad(invalida),
+            "El origen no existe en el grafo.",
+        )
+        self.assertEqual(self.algoritmo.resoluciones, 0)
+
     def setUp(self) -> None:
         self.grafo = Grafo(("A", "B"), (Arista(7, "A", "B", 8, True),))
         self.algoritmo = AlgoritmoEjemplo()

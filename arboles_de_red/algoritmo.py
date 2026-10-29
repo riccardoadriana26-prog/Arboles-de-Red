@@ -22,6 +22,17 @@ class Entrada[ParametrosT]:
     parametros: ParametrosT
 
 
+class CondicionesAplicacion[ParametrosT](ABC):
+    """Condiciones reutilizables del algoritmo, independientes de su resolución."""
+
+    def es_aplicable(self, entrada: Entrada[ParametrosT]) -> bool:
+        return self.motivo_inaplicabilidad(entrada) is None
+
+    @abstractmethod
+    def motivo_inaplicabilidad(self, entrada: Entrada[ParametrosT]) -> str | None:
+        """Devuelve el motivo de rechazo o ``None`` cuando la entrada es compatible."""
+
+
 @dataclass(frozen=True, slots=True)
 class Paso[DetalleT]:
     """Decisión ordenada y referencias que puede destacar la visualización."""
@@ -51,24 +62,33 @@ class Resultado[SolucionT, DetalleT]:
 class Algoritmo[ParametrosT, SolucionT, DetalleT](ABC):
     """Base que impide resolver una entrada no aplicable.
 
-    Cada implementación define sus condiciones y la resolución. Para informar
-    una incompatibilidad, ``_motivo_inaplicabilidad`` devuelve un motivo; para
-    una entrada válida devuelve ``None``. La aplicación usa ``es_aplicable``
-    antes de iniciar y ``ejecutar`` cuando el usuario decide continuar.
+    Recibe condiciones reutilizables y cada implementación define la resolución.
+    También admite implementaciones que definen ``_motivo_inaplicabilidad``.
+    La aplicación consulta ``es_aplicable`` y ``motivo_inaplicabilidad`` antes
+    de iniciar; ``ejecutar`` vuelve a verificar las condiciones antes de resolver.
     """
 
+    def __init__(self, condiciones: CondicionesAplicacion[ParametrosT] | None = None) -> None:
+        self._condiciones = condiciones
+
     def es_aplicable(self, entrada: Entrada[ParametrosT]) -> bool:
-        return self._motivo_inaplicabilidad(entrada) is None
+        return self.motivo_inaplicabilidad(entrada) is None
+
+    def motivo_inaplicabilidad(self, entrada: Entrada[ParametrosT]) -> str | None:
+        """Permite consultar el motivo antes de ejecutar; ``None`` indica que aplica."""
+        return self._motivo_inaplicabilidad(entrada)
 
     def ejecutar(self, entrada: Entrada[ParametrosT]) -> Resultado[SolucionT, DetalleT]:
-        motivo = self._motivo_inaplicabilidad(entrada)
+        motivo = self.motivo_inaplicabilidad(entrada)
         if motivo is not None:
             raise AlgoritmoNoAplicableError(motivo)
         return self._resolver(entrada)
 
-    @abstractmethod
     def _motivo_inaplicabilidad(self, entrada: Entrada[ParametrosT]) -> str | None:
-        """Devuelve ``None`` si la entrada cumple todas las condiciones."""
+        """Usa las condiciones recibidas; permite conservar implementaciones propias."""
+        if self._condiciones is None:
+            return "No se definieron las condiciones de aplicación del algoritmo."
+        return self._condiciones.motivo_inaplicabilidad(entrada)
 
     @abstractmethod
     def _resolver(self, entrada: Entrada[ParametrosT]) -> Resultado[SolucionT, DetalleT]:

@@ -37,6 +37,9 @@ Tripleta de tiempos optimista, más probable y pesimista de una actividad. Se co
 **Condiciones de aplicación**:
 Requisitos específicos del algoritmo que se verifican antes de resolver una entrada.
 
+**Vértice inalcanzable**:
+Vértice al que no se puede llegar desde el origen respetando la dirección de cada conexión. Su presencia se informa en Dijkstra y no implica por sí sola que el algoritmo no sea aplicable.
+
 **Paso de ejecución**:
 Decisión ordenada con descripción, referencias a vértices y aristas destacados, y un detalle propio del algoritmo.
 
@@ -56,7 +59,7 @@ Solución tipada propia del algoritmo y secuencia completa e inmutable de pasos.
 | El modelo puede representar un grafo vacío. La validación del CSV lo rechaza según el [issue #2](https://github.com/camilamercad/arboles-de-red/issues/2); una red AON de una sola actividad es válida. | [Prueba del grafo vacío](./tests/test_grafo.py), [validación CSV](./tests/test_validacion_csv.py) |
 | La versión mínima es Python 3.14. Pueden incorporarse dependencias externas, pero la lógica de los algoritmos se implementará en el proyecto. Este modelo utiliza la biblioteca estándar. | [Configuración del proyecto](./pyproject.toml#L5), [modelo](./arboles_de_red/grafo.py) |
 | Todos los algoritmos comparten una clase base genérica y reciben `Entrada` con `Grafo` y parámetros propios tipados. También son tipados la solución y el detalle de los pasos. | [`Algoritmo` y `Entrada`](./arboles_de_red/algoritmo.py), [ejemplo de implementación](./tests/test_algoritmo.py) |
-| `es_aplicable` devuelve solamente `bool`. `ejecutar` verifica nuevamente las condiciones antes de resolver y, si falla, lanza `AlgoritmoNoAplicableError` con el motivo. Cada algoritmo define sus condiciones y resolución. | [Comprobación y ejecución](./arboles_de_red/algoritmo.py), [pruebas de rechazo](./tests/test_algoritmo.py) |
+| `es_aplicable` devuelve solamente `bool`; `motivo_inaplicabilidad` permite consultar el motivo o `None`. `ejecutar` verifica nuevamente las condiciones antes de resolver y, si falla, lanza `AlgoritmoNoAplicableError` con el motivo. Las condiciones pueden reutilizarse independientemente de la resolución. | [Comprobación y ejecución](./arboles_de_red/algoritmo.py), [condiciones por algoritmo](./arboles_de_red/aplicabilidad.py), [pruebas de rechazo](./tests/test_aplicabilidad.py) |
 | El resultado contiene la solución propia del algoritmo y una secuencia completa e inmutable de pasos. Cada paso lleva número, descripción, identificadores de vértices y aristas destacados, y detalle tipado propio. | [`Resultado` y `Paso`](./arboles_de_red/algoritmo.py), [pruebas de inmutabilidad](./tests/test_algoritmo.py) |
 | Los conteos de vértices y aristas salen del `Grafo`. Las métricas como peso total se exponen, cuando corresponda, desde la solución tipada del algoritmo. | [`Grafo`](./arboles_de_red/grafo.py), [solución del ejemplo](./tests/test_algoritmo.py) |
 | Los seis algoritmos previstos se implementarán en sus issues. El contrato se verifica con una implementación mínima dentro de las pruebas. | [Ejemplo y pruebas](./tests/test_algoritmo.py), [issue #15](https://github.com/camilamercad/arboles-de-red/issues/15) |
@@ -72,4 +75,4 @@ La bibliografía de CPM (diapositivas 3 y 9) y PERT (diapositivas 8 y 10) de la 
 
 Se reemplazan las decisiones anteriores de prohibir vértices aislados y exigir peso en toda arista. El modelo admite una actividad sin conexiones y precedencias con peso=None; mantiene la inmutabilidad, la identidad individual de aristas paralelas y la validación de pesos reales finitos cuando están presentes. Véanse [modelo](./arboles_de_red/grafo.py), [pruebas](./tests/test_grafo.py) y [ejemplo de uso](./README.md#modelo-común-de-grafos-issue-14).
 
-El modelo no decide si una red cumple las condiciones de un algoritmo. La carga de actividades se incorpora en el issue #1 y la validación del contenido en el issue #2. Las condiciones de aplicación, incluidos los ciclos y la conectividad, corresponden al issue #3.
+El modelo no decide si una red cumple las condiciones de un algoritmo. La carga de actividades se incorpora en el issue #1 y la validación del contenido en el issue #2. El issue #3 incorpora las condiciones de aplicación, incluidos los ciclos y la conectividad, sin resolver los algoritmos del issue #6.

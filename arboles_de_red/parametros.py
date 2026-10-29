@@ -1,8 +1,24 @@
-"""Datos inmutables de actividades AON, asociados al identificador del vértice."""
+"""Parámetros tipados e inmutables para los algoritmos de redes."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
+
+
+@dataclass(frozen=True, slots=True)
+class ParametrosDijkstra:
+    """Origen y destino opcional de una consulta de caminos mínimos."""
+
+    origen: str
+    destino: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ParametrosFlujoMaximo:
+    """Terminales de una red de capacidades para Ford–Fulkerson."""
+
+    fuente: str
+    sumidero: str
 
 
 @dataclass(frozen=True, slots=True)
