@@ -62,7 +62,7 @@ actividad_unica = Grafo(vertices=("A",), aristas=())
 
 Las duraciones CPM y las estimaciones PERT pertenecen a las actividades y se
 asociarán a sus identificadores mediante los parámetros tipados de `Entrada`.
-Su carga y validación corresponden a los issues #1, #2 y #3. El modelo conserva
+Su carga corresponde al issue #1; su validación, a los issues #2 y #3. El modelo conserva
 la topología; cada algoritmo verificará los datos necesarios para ejecutarse.
 
 Para ejecutar las pruebas:
@@ -124,10 +124,120 @@ no conoce al lector, al procesador ni a la interfaz gráfica. Las condiciones
 de aplicación pertenecen al algoritmo, mientras que la validación del formato
 pertenece al procesador.
 
-Este issue define contratos y estructura modular. El acceso concreto a
-archivos, la codificación, las reglas y errores del CSV, la interfaz gráfica
-y los controles de recorrido se implementarán en sus respectivos issues.
-No se fija todavía cómo representar la dirección de las aristas en el CSV.
+El issue #16 define contratos y estructura modular. La carga concreta de CSV
+se incorpora en el issue #1, como se describe a continuación. La validación
+detallada, la interfaz gráfica y los controles de recorrido corresponden a
+sus respectivos issues.
 [`tests/test_componentes.py`](tests/test_componentes.py) demuestra la integración
 mediante dobles en memoria y el algoritmo de ejemplo, sin implementar CSV ni
 una interfaz gráfica.
+
+### Carga de CSV (issue #1)
+
+`LectorTexto` implementa `LectorArchivo`: lee archivos UTF-8 con o sin BOM y
+devuelve texto. Cada procesador interpreta un formato concreto sin acceder
+al sistema de archivos:
+
+| Procesador | `preparar_entrada(contenido)` |
+| --- | --- |
+| `ProcesadorConexionesCSV` | `Entrada[None]`: grafo con pesos y dirección por arista. |
+| `ProcesadorCPMCSV` | `Entrada[ParametrosCPM]`: precedencias y duraciones por actividad. |
+| `ProcesadorPERTCSV` | `Entrada[ParametrosPERT]`: precedencias y estimaciones por actividad. |
+
+Los tres heredan de `ProcesadorCSV`, que conserva el contrato
+`ProcesadorGrafo.procesar(contenido) -> Grafo`. Para CPM/PERT se usa
+`preparar_entrada` cuando también se necesitan los datos de las actividades.
+Cada llamada construye un grafo y una entrada nuevos e inmutables. Los mapas
+de duraciones y estimaciones también son inmutables y copian sus datos de origen.
+
+Los archivos usan encabezado, coma como separador de columnas y punto decimal.
+Las listas de predecesoras se separan con `;`; un campo vacío indica que la
+actividad no tiene predecesoras. El orden de las filas no tiene que ser el
+orden de precedencia. Los identificadores son alfanuméricos, como exige `Grafo`.
+
+#### Conexiones ponderadas
+
+El formato original `origen,destino,peso` carga aristas no dirigidas:
+
+```csv
+origen,destino,peso
+A,B,8
+B,C,2.5
+```
+
+La columna opcional `dirigida` admite `true` o `false` por arista. Si se incluye,
+cada fila debe indicar uno de esos valores. Las conexiones dirigidas van de
+`origen` a `destino`. Se conservan las conexiones paralelas, con identificadores
+distintos asignados desde cero en orden de lectura. Se admiten pesos negativos
+y cero; en Flujo Máximo el peso representa la capacidad y las conexiones deben
+declararse dirigidas. Ejemplo descargable: [`conexiones.csv`](ejemplos/conexiones.csv).
+
+```csv
+origen,destino,peso,dirigida
+A,B,8,false
+A,C,3.5,true
+A,B,8,false
+```
+
+El CSV contiene los datos de las conexiones. Los parámetros de ejecución,
+como el origen de Dijkstra o la fuente y el sumidero de Flujo Máximo, los aporta
+la aplicación al preparar `Entrada(grafo, parametros_del_algoritmo)`.
+
+#### Actividades CPM en AON
+
+Cada fila declara una actividad una única vez, con su duración y sus
+predecesoras inmediatas. `C` tiene dos predecesoras y `Independiente` no
+participa en ninguna precedencia. Ejemplo: [`cpm.csv`](ejemplos/cpm.csv).
+
+```csv
+actividad,duracion,predecesoras
+A,2,
+B,3,A
+C,4.5,A;B
+Independiente,1,
+```
+
+Las duraciones quedan en `entrada.parametros.duraciones`, un mapa de
+identificador de actividad a `float`. Las precedencias son aristas dirigidas
+con `peso=None`. Una actividad sin predecesoras puede constituir por sí sola
+una red válida; no hace falta agregar actividades ficticias ni aristas con peso.
+
+#### Actividades PERT en AON
+
+Cada actividad conserva sus tres estimaciones originales, sin reemplazarlas
+por un peso calculado. Ejemplo: [`pert.csv`](ejemplos/pert.csv).
+
+```csv
+actividad,optimista,mas_probable,pesimista,predecesoras
+A,1,2,9,
+B,2,3,4,A
+C,2,4,8,A;B
+Independiente,1,1,1,
+```
+
+`entrada.parametros.estimaciones` asocia cada identificador a una
+`EstimacionesPERT(optimista, mas_probable, pesimista)` inmutable. El tiempo
+esperado y la varianza se calcularán al resolver, no durante la carga.
+
+#### Uso desde la aplicación
+
+```python
+from arboles_de_red import LectorTexto, ProcesadorCPMCSV
+
+contenido = LectorTexto().leer("ejemplos/cpm.csv")
+entrada = ProcesadorCPMCSV().preparar_entrada(contenido)
+assert entrada.parametros.duraciones["C"] == 4.5
+
+# Con implementaciones concretas del visualizador y del algoritmo:
+# visualizador.mostrar_grafo(entrada.grafo)
+# resultado = algoritmo.ejecutar(entrada)
+# visualizador.mostrar_resultado(entrada.grafo, resultado)
+```
+
+La carga de este issue trabaja con CSV válidos y respeta las restricciones
+del modelo existente. Los diagnósticos de encabezados, filas y valores inválidos,
+con líneas de origen y acumulación de errores, corresponden al
+[issue #2](https://github.com/camilamercad/arboles-de-red/issues/2).
+Las condiciones propias de cada algoritmo, incluidos ciclos y conectividad,
+corresponden al [issue #3](https://github.com/camilamercad/arboles-de-red/issues/3).
+La carga no ejecuta algoritmos ni fija el orden de selección en la interfaz.

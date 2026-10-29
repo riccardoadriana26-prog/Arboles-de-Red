@@ -1,0 +1,5 @@
+actividad,optimista,mas_probable,pesimista,predecesoras
+A,1,2,9,
+B,2,3,4,A
+C,2,4,8,A;B
+Independiente,1,1,1,

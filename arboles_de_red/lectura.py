@@ -14,3 +14,10 @@ class LectorArchivo(ABC):
         La implementación concreta se encarga del acceso al archivo y de su
         decodificación. La interpretación del contenido pertenece al procesador.
         """
+
+
+class LectorTexto(LectorArchivo):
+    """Lee archivos UTF-8, aceptando también la marca BOM inicial."""
+
+    def leer(self, ruta: str | Path) -> str:
+        return Path(ruta).read_text(encoding="utf-8-sig")

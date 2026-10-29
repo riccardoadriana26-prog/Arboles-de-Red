@@ -1,0 +1,5 @@
+actividad,duracion,predecesoras
+A,2,
+B,3,A
+C,4.5,A;B
+Independiente,1,

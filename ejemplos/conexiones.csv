@@ -1,0 +1,4 @@
+origen,destino,peso,dirigida
+A,B,8,false
+A,C,3.5,true
+A,B,8,false

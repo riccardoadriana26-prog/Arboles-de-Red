@@ -22,6 +22,18 @@ Valor numérico real y finito asociado a una arista; puede ser positivo, negativ
 **Entrada de algoritmo**:
 Grafo y parámetros tipados propios del algoritmo que se utilizarán en una ejecución.
 
+**Actividad AON**:
+Trabajo representado por un vértice de la red CPM o PERT. Tiene una duración en CPM o tres estimaciones en PERT, y puede existir sin precedencias.
+
+**Predecesora inmediata**:
+Actividad que debe terminar antes de que otra pueda comenzar, expresada por una arista dirigida sin peso desde la predecesora hacia la sucesora. Una actividad puede tener varias predecesoras inmediatas o ninguna.
+
+**Duración CPM**:
+Tiempo de una actividad, asociado a su identificador y no a las aristas de precedencia.
+
+**Estimaciones PERT**:
+Tripleta de tiempos optimista, más probable y pesimista de una actividad. Se conserva completa para calcular el tiempo esperado y la varianza durante la resolución.
+
 **Condiciones de aplicación**:
 Requisitos específicos del algoritmo que se verifican antes de resolver una entrada.
 
@@ -52,12 +64,12 @@ Solución tipada propia del algoritmo y secuencia completa e inmutable de pasos.
 | Las nuevas interfaces son clases base abstractas, como `Algoritmo`. Cada componente tiene su propio módulo y se comunica mediante texto, `Grafo`, `Entrada` y `Resultado`. Los algoritmos no dependen de la interfaz gráfica. | [API pública](./arboles_de_red/__init__.py), [integración con dobles](./tests/test_componentes.py) |
 | El lector CSV y la visualización concretos quedan para sus respectivos issues. La codificación de archivos, los detalles del formato CSV y sus errores, y la tecnología de interfaz no se definen en el issue #16. | [Alcance del issue #16](./README.md#separación-de-responsabilidades-issue-16) |
 
-Estas decisiones concretan los [issues #14](https://github.com/camilamercad/arboles-de-red/issues/14), [#15](https://github.com/camilamercad/arboles-de-red/issues/15) y [#16](https://github.com/camilamercad/arboles-de-red/issues/16). Los seis algoritmos, el lector de CSV, su procesamiento y la visualización concretos todavía no están implementados; sus filas indican el contrato que deberán respetar.
+Estas decisiones concretan los [issues #14](https://github.com/camilamercad/arboles-de-red/issues/14), [#15](https://github.com/camilamercad/arboles-de-red/issues/15) y [#16](https://github.com/camilamercad/arboles-de-red/issues/16). La carga de CSV se incorpora en el [issue #1](https://github.com/camilamercad/arboles-de-red/issues/1), con formatos de conexiones, CPM y PERT documentados en el README. Los seis algoritmos y la visualización concretos todavía no están implementados; sus filas indican el contrato que deberán respetar.
 
 ## Corrección del modelo #14 para redes AON
 
-La bibliografía de CPM (diapositivas 3 y 9) y PERT (diapositivas 8 y 10) de la cátedra representa actividades en vértices y precedencias en aristas dirigidas. La duración o las tres estimaciones corresponden a cada actividad y podrán asociarse a su identificador mediante los parámetros tipados de Entrada.
+La bibliografía de CPM (diapositivas 3 y 9) y PERT (diapositivas 8 y 10) de la cátedra representa actividades en vértices y precedencias en aristas dirigidas. La duración o las tres estimaciones corresponden a cada actividad y se asocian a su identificador mediante los parámetros tipados de Entrada.
 
 Se reemplazan las decisiones anteriores de prohibir vértices aislados y exigir peso en toda arista. El modelo admite una actividad sin conexiones y precedencias con peso=None; mantiene la inmutabilidad, la identidad individual de aristas paralelas y la validación de pesos reales finitos cuando están presentes. Véanse [modelo](./arboles_de_red/grafo.py), [pruebas](./tests/test_grafo.py) y [ejemplo de uso](./README.md#modelo-común-de-grafos-issue-14).
 
-El modelo no decide si una red cumple las condiciones de un algoritmo. La carga de actividades y la validación de datos por actividad corresponden a los issues #1, #2 y #3.
+El modelo no decide si una red cumple las condiciones de un algoritmo. La carga de actividades se incorpora en el issue #1; la validación de datos por actividad y las condiciones de aplicación corresponden a los issues #2 y #3.
