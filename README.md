@@ -45,7 +45,7 @@ El modelo es inmutable y rechaza lazos e identificadores de
 vértice no alfanuméricos, extremos inexistentes e identificadores repetidos.
 Acepta componentes desconectados: cada algoritmo decidirá si puede aplicarse
 según el issue #3. Un grafo vacío es representable en el modelo; la validación
-del CSV lo rechazará al implementar los issues #1 y #2.
+del CSV lo rechaza según el issue #2.
 
 Para representar redes AON de CPM y PERT, cada vértice identifica una actividad
 y las aristas dirigidas expresan precedencia. Una precedencia utiliza
@@ -234,10 +234,59 @@ assert entrada.parametros.duraciones["C"] == 4.5
 # visualizador.mostrar_resultado(entrada.grafo, resultado)
 ```
 
-La carga de este issue trabaja con CSV válidos y respeta las restricciones
-del modelo existente. Los diagnósticos de encabezados, filas y valores inválidos,
-con líneas de origen y acumulación de errores, corresponden al
-[issue #2](https://github.com/camilamercad/arboles-de-red/issues/2).
-Las condiciones propias de cada algoritmo, incluidos ciclos y conectividad,
-corresponden al [issue #3](https://github.com/camilamercad/arboles-de-red/issues/3).
+La carga respeta las restricciones del modelo existente y valida el contenido
+según el issue #2. Las condiciones propias de cada algoritmo, incluidos ciclos
+y conectividad, corresponden al
+[issue #3](https://github.com/camilamercad/arboles-de-red/issues/3).
 La carga no ejecuta algoritmos ni fija el orden de selección en la interfaz.
+
+### Validación de CSV (issue #2)
+
+Tanto `procesar` como `preparar_entrada` lanzan `ErrorValidacionCSV` cuando el
+contenido es inválido. Su atributo `errores` es una tupla de `DiagnosticoCSV`
+inmutables con `linea`, `columna` y `mensaje`. Las líneas se numeran desde uno
+y corresponden al archivo original; si un registro ocupa varias líneas, se
+informa la primera. `columna=None` identifica problemas de la fila completa.
+El texto de la excepción incluye todos los diagnósticos reunidos.
+
+| Estructura | Reglas de contenido |
+| --- | --- |
+| Todas | Encabezado obligatorio, con nombres exactos y sin columnas faltantes, repetidas ni ajenas al formato. Se admite cualquier orden de columnas. Cada fila tiene la misma cantidad de campos que el encabezado. Se rechazan errores de sintaxis CSV y archivos sin datos. |
+| Conexiones | Extremos alfanuméricos no vacíos, distintos entre sí; peso real finito, incluyendo cero y negativos. Si está la columna `dirigida`, cada fila debe indicar `true` o `false`. |
+| Actividades AON | Identificadores alfanuméricos únicos y predecesoras existentes, aunque se declaren después. Se admite el campo de predecesoras vacío, varias predecesoras y actividades independientes. Cada elemento de una lista no vacía debe ser un identificador; no se admiten lazos, como exige el modelo. |
+| CPM | Una duración real finita y no negativa por actividad. |
+| PERT | Tres estimaciones reales finitas con `0 <= optimista <= mas_probable <= pesimista`. |
+
+El signo y el orden se verifican sobre los valores decimales originales para
+que el redondeo no oculte números negativos ni estimaciones desordenadas.
+Los valores también deben poder convertirse a un `float` finito, como exige
+el modelo; su normalización se realiza después de validar el contenido.
+
+Los campos obligatorios no pueden estar vacíos, excepto `predecesoras`. Las
+líneas vacías después del encabezado se omiten; una fila con campos vacíos se
+valida y puede producir errores. Las precedencias no requieren peso, y no se
+piden resultados calculados como tiempos tempranos o tardíos, holgura, tiempo
+esperado ni varianza. Una red AON de una sola actividad sigue siendo válida.
+
+```python
+from arboles_de_red import ErrorValidacionCSV, ProcesadorConexionesCSV
+
+try:
+    entrada = ProcesadorConexionesCSV().preparar_entrada(
+        "origen,destino,peso,dirigida\nA,B,nan,si\n"
+    )
+except ErrorValidacionCSV as error:
+    for diagnostico in error.errores:
+        print(diagnostico)
+```
+
+Este ejemplo informa dos errores en la línea 2: peso no finito y dirección
+distinta de `true` o `false`. Se reúnen errores de varias filas y campos antes
+de construir el grafo. Un encabezado inválido impide interpretar las filas;
+un error de sintaxis CSV detiene la lectura, conservando los diagnósticos que
+se puedan obtener de los registros anteriores. Una fila con cantidad incorrecta
+de campos se informa y se continúa con las siguientes.
+
+Si hay errores no se devuelve una entrada ni un grafo parcial, ni se modifican
+las cargas anteriores. Los ciclos entre actividades distintas y los componentes
+desconectados se conservan para comprobar la aplicabilidad en el issue #3.

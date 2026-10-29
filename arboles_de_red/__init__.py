@@ -11,13 +11,16 @@ from .grafo import Arista, Grafo
 from .lectura import LectorArchivo, LectorTexto
 from .parametros import EstimacionesPERT, ParametrosCPM, ParametrosPERT
 from .procesamiento import ProcesadorGrafo
+from .validacion_csv import DiagnosticoCSV, ErrorValidacionCSV
 from .visualizacion import Visualizador
 
 __all__ = [
     "Algoritmo",
     "AlgoritmoNoAplicableError",
     "Arista",
+    "DiagnosticoCSV",
     "Entrada",
+    "ErrorValidacionCSV",
     "EstimacionesPERT",
     "Grafo",
     "LectorArchivo",
