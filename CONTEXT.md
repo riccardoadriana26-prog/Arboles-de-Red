@@ -22,6 +22,12 @@ Valor numérico real y finito asociado a una arista; puede ser positivo, negativ
 **Entrada de algoritmo**:
 Grafo y parámetros tipados propios del algoritmo que se utilizarán en una ejecución.
 
+**Registro de algoritmos**:
+Catálogo de algoritmos disponibles para seleccionar, cada uno con una identidad y unos requisitos de entrada propios. Incorporar una opción conserva las elecciones anteriores.
+
+**Ejecución preparada**:
+Selección de un algoritmo con su entrada específica, lista para consultar su compatibilidad y resolver. Conserva la carga original y los parámetros propios de esa elección.
+
 **Actividad AON**:
 Trabajo representado por un vértice de la red CPM o PERT. Tiene una duración en CPM o tres estimaciones en PERT, y puede existir sin precedencias.
 
@@ -76,3 +82,5 @@ La bibliografía de CPM (diapositivas 3 y 9) y PERT (diapositivas 8 y 10) de la 
 Se reemplazan las decisiones anteriores de prohibir vértices aislados y exigir peso en toda arista. El modelo admite una actividad sin conexiones y precedencias con peso=None; mantiene la inmutabilidad, la identidad individual de aristas paralelas y la validación de pesos reales finitos cuando están presentes. Véanse [modelo](./arboles_de_red/grafo.py), [pruebas](./tests/test_grafo.py) y [ejemplo de uso](./README.md#modelo-común-de-grafos-issue-14).
 
 El modelo no decide si una red cumple las condiciones de un algoritmo. La carga de actividades se incorpora en el issue #1 y la validación del contenido en el issue #2. El issue #3 incorpora las condiciones de aplicación, incluidos los ciclos y la conectividad, sin resolver los algoritmos del issue #6.
+
+El issue #17 incorpora el catálogo y la preparación de entradas de los seis algoritmos. Las implementaciones de resolución del issue #6 se conectan mediante el contrato común, conservando sus condiciones, soluciones y pasos propios.

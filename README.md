@@ -358,3 +358,91 @@ en vértices; no había resolutores CPM/PERT anteriores que migrar en esta rama.
 Las pruebas usan casos representativos y los ejemplos CSV del repositorio.
 Las redes exactas de la bibliografía se incorporarán cuando se disponga del
 material, según lo acordado para esta implementación.
+
+### Registro de algoritmos (issue #17)
+
+`RegistroAlgoritmos` permite incorporar implementaciones sin modificar la
+selección, la consulta de condiciones ni la ejecución. Cada
+`RegistroAlgoritmo[Parametros, Solucion, Detalle]` reúne un identificador único,
+un nombre, una fábrica de `Algoritmo` y una función que prepara sus parámetros
+desde la carga original y las opciones de ejecución. La fábrica debe devolver
+una instancia nueva en cada llamada. Los contratos del registro y de
+`EjecucionPreparada` son clases base abstractas, como las demás interfaces del
+proyecto.
+
+`crear_registro_catedra` conecta los seis algoritmos de la consigna mediante
+fábricas recibidas por nombre: `prim`, `kruskal`, `dijkstra`, `flujo_maximo`,
+`cpm` y `pert`. Sus identificadores de selección son los mismos. La composición
+de estos registros está en [`catedra.py`](arboles_de_red/catedra.py); el mecanismo
+general está en [`registro.py`](arboles_de_red/registro.py) y no contiene casos
+por nombre de algoritmo.
+
+| Registro | Opciones de ejecución | Parámetros preparados |
+| --- | --- | --- |
+| `prim`, `kruskal` | Ninguna. | `None`, conservando el grafo cargado. |
+| `dijkstra` | `origen` obligatorio y `destino` opcional. | `ParametrosDijkstra`. |
+| `flujo_maximo` | `fuente` y `sumidero` obligatorios. | `ParametrosFlujoMaximo`. |
+| `cpm` | Ninguna; reutiliza la carga CPM. | `ParametrosCPM` con sus duraciones por actividad. |
+| `pert` | Ninguna; reutiliza la carga PERT. | `ParametrosPERT` con sus tres estimaciones por actividad. |
+
+Las opciones son un mapa de texto, por ejemplo `{"origen": "A", "destino": "C"}`.
+`ErrorPreparacionEntrada` informa terminales faltantes o vacíos, opciones no
+admitidas o ausencia de los datos de actividades requeridos. No se inventan
+duraciones ni se convierten estimaciones PERT en duraciones CPM. La existencia
+de los terminales y las demás condiciones del algoritmo se consultan después
+mediante el contrato del issue #3.
+
+Con las fábricas de las implementaciones concretas disponibles, la aplicación
+configura el catálogo una sola vez:
+
+```python
+from arboles_de_red import crear_registro_catedra
+
+# crear_prim, crear_kruskal, etc. son fábricas de las implementaciones del #6.
+registro = crear_registro_catedra(
+    prim=crear_prim,
+    kruskal=crear_kruskal,
+    dijkstra=crear_dijkstra,
+    flujo_maximo=crear_flujo_maximo,
+    cpm=crear_cpm,
+    pert=crear_pert,
+)
+```
+
+Después utiliza el mismo recorrido para cualquier identificador, una `carga`
+obtenida mediante `preparar_entrada` del CSV y sus `opciones` de ejecución:
+
+```python
+opcion = registro.seleccionar(identificador)
+ejecucion = opcion.preparar(carga, opciones)
+motivo = ejecucion.motivo_inaplicabilidad()
+if motivo is None:
+    resultado = ejecucion.ejecutar()
+```
+
+`ejecucion.entrada` conserva el grafo original y contiene los parámetros tipados
+del algoritmo elegido. `EjecucionPreparada` expone `es_aplicable()`,
+`motivo_inaplicabilidad()` y `ejecutar()`; delega en la implementación registrada
+y conserva su solución y sus pasos sin transformarlos. `ejecutar()` vuelve a
+comprobar las condiciones y propaga `AlgoritmoNoAplicableError` cuando no aplica.
+Cada consulta y cada ejecución obtiene una instancia mediante la fábrica, sin
+compartir el estado mutable de una resolución anterior.
+
+`registro.identificadores` devuelve una tupla en orden de incorporación.
+`seleccionar` lanza `KeyError` si el identificador no existe. `registrar` rechaza
+un identificador repetido con `ValueError`, sin sustituir su registro anterior.
+Las opciones registradas y las ejecuciones preparadas son inmutables; ampliar
+el catálogo conserva las selecciones, entradas y resultados anteriores. Para
+incorporar otra implementación se agrega un `RegistroAlgoritmo` con su fábrica
+y preparador; no se modifica el mecanismo general.
+
+Un registro genérico usado directamente conserva también los tipos estáticos
+de solución y detalle. Al seleccionar por un identificador dinámico, el catálogo
+expone esos tipos como `object`, manteniendo intactos los objetos tipados que
+devuelve cada implementación. No utiliza `Any` ni conversiones de soluciones.
+
+Este issue implementa el registro y la composición de los seis algoritmos. Las
+implementaciones que calculan las soluciones siguen correspondiendo al issue
+#6 y deben suministrarse como fábricas; no se registran resolutores ficticios
+ni se adelanta su cálculo. Las pruebas recorren los seis registros usando
+implementaciones mínimas dentro de las pruebas y las condiciones reales del #3.

@@ -21,6 +21,7 @@ from .csv import (
     ProcesadorCSV,
     ProcesadorPERTCSV,
 )
+from .catedra import crear_registro_catedra
 from .grafo import Arista, Grafo
 from .lectura import LectorArchivo, LectorTexto
 from .parametros import (
@@ -31,6 +32,12 @@ from .parametros import (
     ParametrosPERT,
 )
 from .procesamiento import ProcesadorGrafo
+from .registro import (
+    EjecucionPreparada,
+    ErrorPreparacionEntrada,
+    RegistroAlgoritmo,
+    RegistroAlgoritmos,
+)
 from .validacion_csv import DiagnosticoCSV, ErrorValidacionCSV
 from .visualizacion import Visualizador
 
@@ -46,7 +53,9 @@ __all__ = [
     "CondicionesPERT",
     "DiagnosticoCSV",
     "Entrada",
+    "EjecucionPreparada",
     "ErrorValidacionCSV",
+    "ErrorPreparacionEntrada",
     "EstimacionesPERT",
     "Grafo",
     "LectorArchivo",
@@ -62,5 +71,8 @@ __all__ = [
     "ProcesadorGrafo",
     "ProcesadorPERTCSV",
     "Resultado",
+    "RegistroAlgoritmo",
+    "RegistroAlgoritmos",
     "Visualizador",
+    "crear_registro_catedra",
 ]
