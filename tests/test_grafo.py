@@ -52,9 +52,11 @@ class GrafoTests(unittest.TestCase):
         )
         self.assertEqual(len(grafo.vertices), 4)
 
-    def test_rechaza_vertices_aislados(self):
-        with self.assertRaisesRegex(ValueError, "aislados"):
-            Grafo(("A", "B", "C"), (Arista(0, "A", "B", 1, True),))
+    def test_admite_actividades_aisladas_y_precedencias_sin_peso(self):
+        grafo = Grafo(("A", "B", "C"), (Arista(0, "A", "B", None, True),))
+        self.assertEqual(grafo.vertices, ("A", "B", "C"))
+        self.assertIsNone(grafo.aristas[0].peso)
+        self.assertEqual(Grafo(("Unica",), ()).vertices, ("Unica",))
 
     def test_rechaza_identificadores_de_vertice_repetidos(self):
         with self.assertRaisesRegex(ValueError, "únicos"):
