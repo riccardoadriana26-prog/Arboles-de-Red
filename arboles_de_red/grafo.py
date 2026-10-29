@@ -15,12 +15,12 @@ def _validar_vertice(identificador: str) -> None:
 
 @dataclass(frozen=True, slots=True)
 class Arista:
-    """Conexión individual; el identificador distingue aristas paralelas."""
+    """Conexión individual; peso=None representa una precedencia sin peso."""
 
     identificador: int
     origen: str
     destino: str
-    peso: float
+    peso: float | None
     dirigida: bool
 
     def __post_init__(self) -> None:
@@ -36,17 +36,18 @@ class Arista:
         if self.origen == self.destino:
             raise ValueError("No se admiten lazos.")
 
-        if isinstance(self.peso, bool) or not isinstance(
-            self.peso, (Real, Decimal)
-        ):
-            raise TypeError("El peso debe ser un número real.")
-        try:
-            peso = float(self.peso)
-        except OverflowError as error:
-            raise ValueError("El peso debe ser un número real finito.") from error
-        if not isfinite(peso):
-            raise ValueError("El peso debe ser un número real finito.")
-        object.__setattr__(self, "peso", peso)
+        if self.peso is not None:
+            if isinstance(self.peso, bool) or not isinstance(
+                self.peso, (Real, Decimal)
+            ):
+                raise TypeError("El peso debe ser un número real.")
+            try:
+                peso = float(self.peso)
+            except OverflowError as error:
+                raise ValueError("El peso debe ser un número real finito.") from error
+            if not isfinite(peso):
+                raise ValueError("El peso debe ser un número real finito.")
+            object.__setattr__(self, "peso", peso)
 
         if not isinstance(self.dirigida, bool):
             raise TypeError("La dirección de la arista debe ser un booleano.")
@@ -73,7 +74,6 @@ class Grafo:
             raise ValueError("Los identificadores de vértices deben ser únicos.")
 
         identificadores: set[int] = set()
-        incidentes: set[str] = set()
         conjunto_vertices = set(vertices)
         for arista in aristas:
             if not isinstance(arista, Arista):
@@ -86,10 +86,6 @@ class Grafo:
                 or arista.destino not in conjunto_vertices
             ):
                 raise ValueError("Los extremos de cada arista deben existir en el grafo.")
-            incidentes.update((arista.origen, arista.destino))
-
-        if conjunto_vertices - incidentes:
-            raise ValueError("No se admiten vértices aislados.")
 
         object.__setattr__(self, "vertices", vertices)
         object.__setattr__(self, "aristas", aristas)

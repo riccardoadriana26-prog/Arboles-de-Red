@@ -37,15 +37,33 @@ grafo = Grafo(
 
 Cada arista tiene un identificador entero único dentro del grafo. Esto permite
 conservar aristas paralelas aunque coincidan sus extremos, dirección y peso.
-Los pesos se almacenan como `float` finitos; se aceptan valores negativos y
+Los pesos presentes se almacenan como `float` finitos; se aceptan valores negativos y
 cero. La dirección se define por arista, así que un grafo puede combinar
 aristas dirigidas y no dirigidas.
 
-El modelo es inmutable y rechaza lazos, vértices aislados, identificadores de
+El modelo es inmutable y rechaza lazos e identificadores de
 vértice no alfanuméricos, extremos inexistentes e identificadores repetidos.
 Acepta componentes desconectados: cada algoritmo decidirá si puede aplicarse
 según el issue #3. Un grafo vacío es representable en el modelo; la validación
 del CSV lo rechazará al implementar los issues #1 y #2.
+
+Para representar redes AON de CPM y PERT, cada vértice identifica una actividad
+y las aristas dirigidas expresan precedencia. Una precedencia utiliza
+`peso=None`, que indica ausencia de peso y se distingue de un peso cero.
+Se admiten actividades aisladas y redes con una única actividad sin aristas:
+
+```python
+precedencias = Grafo(
+    vertices=("A", "B", "Independiente"),
+    aristas=(Arista(0, "A", "B", None, dirigida=True),),
+)
+actividad_unica = Grafo(vertices=("A",), aristas=())
+```
+
+Las duraciones CPM y las estimaciones PERT pertenecen a las actividades y se
+asociarán a sus identificadores mediante los parámetros tipados de `Entrada`.
+Su carga y validación corresponden a los issues #1, #2 y #3. El modelo conserva
+la topología; cada algoritmo verificará los datos necesarios para ejecutarse.
 
 Para ejecutar las pruebas:
 

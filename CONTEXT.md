@@ -8,10 +8,10 @@ Vocabulario común para los grafos que cargará la aplicación y utilizarán los
 Conjunto de vértices y aristas sobre el que se puede evaluar la aplicación de un algoritmo de redes. Puede contener aristas dirigidas y no dirigidas, incluso en un mismo grafo.
 
 **Vértice**:
-Elemento del grafo identificado por un valor alfanumérico. Un vértice aislado no forma parte de los grafos admitidos.
+Elemento del grafo identificado por un valor alfanumérico. Puede ser una actividad AON sin precedencias, incluso aislada.
 
 **Arista**:
-Conexión entre dos vértices con un peso real finito que puede ser dirigida o no dirigida. Una arista no puede unir un vértice consigo mismo.
+Conexión entre dos vértices que puede ser dirigida o no dirigida. Puede tener un peso real finito; una precedencia AON utiliza None para expresar ausencia de peso. Una arista no puede unir un vértice consigo mismo.
 
 **Aristas paralelas**:
 Aristas individuales que conectan el mismo par de vértices. Pueden compartir dirección y peso sin convertirse en una sola arista.
@@ -35,13 +35,13 @@ Solución tipada propia del algoritmo y secuencia completa e inmutable de pasos.
 
 | Decisión | Referencia en el código |
 | --- | --- |
-| El grafo es la entrada común, independiente de los algoritmos. La dirección se define en cada arista; un mismo grafo puede combinar aristas dirigidas y no dirigidas. | [`Grafo`](./arboles_de_red/grafo.py#L56), [`Arista`](./arboles_de_red/grafo.py#L17), [API pública](./arboles_de_red/__init__.py) |
-| Los vértices tienen identificadores alfanuméricos únicos. No se admiten vértices aislados ni lazos. | [Validación de vértices y lazos](./arboles_de_red/grafo.py#L9), [validación del grafo](./arboles_de_red/grafo.py#L66) |
-| Se conservan las aristas paralelas como entidades individuales, incluso si sus extremos, dirección y peso coinciden. Cada una tiene un identificador entero único dentro del grafo. Flujo Máximo podrá usar ambas; la selección de aristas para una solución corresponde al algoritmo. | [`Arista`](./arboles_de_red/grafo.py#L17), [unicidad en `Grafo`](./arboles_de_red/grafo.py#L81), [prueba de paralelas](./tests/test_grafo.py#L20) |
-| Todas las aristas tienen peso. Los enteros y reales finitos se normalizan a `float`, por lo que `8` y `8.0` representan el mismo peso. Se aceptan valores negativos y cero; se rechazan texto, `NaN` e infinitos. | [Validación del peso](./arboles_de_red/grafo.py#L39), [pruebas de pesos](./tests/test_grafo.py#L28) |
-| El modelo es inmutable. Cargar otro CSV dará lugar a otro `Grafo`, no a una modificación del existente. | [`dataclass` inmutables y conversión a tuplas](./arboles_de_red/grafo.py#L16), [prueba de inmutabilidad](./tests/test_grafo.py#L72) |
-| Un grafo puede tener componentes desconectados. Cada algoritmo verificará sus propias condiciones de aplicación antes de ejecutarse, según el [issue #3](https://github.com/camilamercad/arboles-de-red/issues/3). | [`Grafo`](./arboles_de_red/grafo.py#L56), [prueba de desconexión](./tests/test_grafo.py#L48) |
-| El modelo puede representar un grafo vacío. La validación del CSV deberá rechazarlo cuando se implementen los [issues #1](https://github.com/camilamercad/arboles-de-red/issues/1) y [#2](https://github.com/camilamercad/arboles-de-red/issues/2). | [Prueba del grafo vacío](./tests/test_grafo.py#L86); validación CSV pendiente |
+| El grafo es la entrada común, independiente de los algoritmos. La dirección se define en cada arista; un mismo grafo puede combinar aristas dirigidas y no dirigidas. | [`Grafo`](./arboles_de_red/grafo.py), [`Arista`](./arboles_de_red/grafo.py), [API pública](./arboles_de_red/__init__.py) |
+| Los vértices tienen identificadores alfanuméricos únicos. Se admiten vértices aislados para representar actividades independientes; no se admiten lazos. | [Validación de vértices y lazos](./arboles_de_red/grafo.py), [validación del grafo](./arboles_de_red/grafo.py) |
+| Se conservan las aristas paralelas como entidades individuales, incluso si sus extremos, dirección y peso coinciden. Cada una tiene un identificador entero único dentro del grafo. Flujo Máximo podrá usar ambas; la selección de aristas para una solución corresponde al algoritmo. | [`Arista`](./arboles_de_red/grafo.py), [unicidad en `Grafo`](./arboles_de_red/grafo.py), [prueba de paralelas](./tests/test_grafo.py) |
+| El peso es opcional: None representa una precedencia sin peso y se distingue de cero. Los enteros y reales finitos se normalizan a `float`, por lo que `8` y `8.0` representan el mismo peso. Se aceptan valores negativos y cero; se rechazan texto, `NaN` e infinitos. | [Validación del peso](./arboles_de_red/grafo.py), [pruebas de pesos](./tests/test_grafo.py) |
+| El modelo es inmutable. Cargar otro CSV dará lugar a otro `Grafo`, no a una modificación del existente. | [`dataclass` inmutables y conversión a tuplas](./arboles_de_red/grafo.py), [prueba de inmutabilidad](./tests/test_grafo.py) |
+| Un grafo puede tener componentes desconectados. Cada algoritmo verificará sus propias condiciones de aplicación antes de ejecutarse, según el [issue #3](https://github.com/camilamercad/arboles-de-red/issues/3). | [`Grafo`](./arboles_de_red/grafo.py), [prueba de desconexión](./tests/test_grafo.py) |
+| El modelo puede representar un grafo vacío. La validación del CSV deberá rechazarlo cuando se implementen los [issues #1](https://github.com/camilamercad/arboles-de-red/issues/1) y [#2](https://github.com/camilamercad/arboles-de-red/issues/2). | [Prueba del grafo vacío](./tests/test_grafo.py); validación CSV pendiente |
 | La versión mínima es Python 3.14. Pueden incorporarse dependencias externas, pero la lógica de los algoritmos se implementará en el proyecto. Este modelo utiliza la biblioteca estándar. | [Configuración del proyecto](./pyproject.toml#L5), [modelo](./arboles_de_red/grafo.py) |
 | Todos los algoritmos comparten una clase base genérica y reciben `Entrada` con `Grafo` y parámetros propios tipados. También son tipados la solución y el detalle de los pasos. | [`Algoritmo` y `Entrada`](./arboles_de_red/algoritmo.py), [ejemplo de implementación](./tests/test_algoritmo.py) |
 | `es_aplicable` devuelve solamente `bool`. `ejecutar` verifica nuevamente las condiciones antes de resolver y, si falla, lanza `AlgoritmoNoAplicableError` con el motivo. Cada algoritmo define sus condiciones y resolución. | [Comprobación y ejecución](./arboles_de_red/algoritmo.py), [pruebas de rechazo](./tests/test_algoritmo.py) |
@@ -53,3 +53,11 @@ Solución tipada propia del algoritmo y secuencia completa e inmutable de pasos.
 | El lector CSV y la visualización concretos quedan para sus respectivos issues. La codificación de archivos, los detalles del formato CSV y sus errores, y la tecnología de interfaz no se definen en el issue #16. | [Alcance del issue #16](./README.md#separación-de-responsabilidades-issue-16) |
 
 Estas decisiones concretan los [issues #14](https://github.com/camilamercad/arboles-de-red/issues/14), [#15](https://github.com/camilamercad/arboles-de-red/issues/15) y [#16](https://github.com/camilamercad/arboles-de-red/issues/16). Los seis algoritmos, el lector de CSV, su procesamiento y la visualización concretos todavía no están implementados; sus filas indican el contrato que deberán respetar.
+
+## Corrección del modelo #14 para redes AON
+
+La bibliografía de CPM (diapositivas 3 y 9) y PERT (diapositivas 8 y 10) de la cátedra representa actividades en vértices y precedencias en aristas dirigidas. La duración o las tres estimaciones corresponden a cada actividad y podrán asociarse a su identificador mediante los parámetros tipados de Entrada.
+
+Se reemplazan las decisiones anteriores de prohibir vértices aislados y exigir peso en toda arista. El modelo admite una actividad sin conexiones y precedencias con peso=None; mantiene la inmutabilidad, la identidad individual de aristas paralelas y la validación de pesos reales finitos cuando están presentes. Véanse [modelo](./arboles_de_red/grafo.py), [pruebas](./tests/test_grafo.py) y [ejemplo de uso](./README.md#modelo-común-de-grafos-issue-14).
+
+El modelo no decide si una red cumple las condiciones de un algoritmo. La carga de actividades y la validación de datos por actividad corresponden a los issues #1, #2 y #3.
