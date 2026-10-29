@@ -21,7 +21,18 @@ from .csv import (
     ProcesadorCSV,
     ProcesadorPERTCSV,
 )
-from .catedra import crear_registro_catedra
+from .catedra import crear_registro_catedra, crear_registro_predeterminado
+from ._numeros import ErrorCalculoNumerico
+from .arbol_expansion import DetalleArbolExpansion, Kruskal, Prim, SolucionArbolExpansion
+from .cpm import CPM, DetalleCPM, RutasCriticas, SolucionCPM, TiemposActividad
+from .dijkstra import DetalleDijkstra, Dijkstra, SolucionDijkstra
+from .flujo_maximo import (
+    ActualizacionResidual,
+    DetalleFlujoMaximo,
+    FordFulkerson,
+    SolucionFlujoMaximo,
+    TramoAumento,
+)
 from .grafo import Arista, Grafo
 from .lectura import LectorArchivo, LectorTexto
 from .parametros import (
@@ -32,6 +43,7 @@ from .parametros import (
     ParametrosPERT,
 )
 from .procesamiento import ProcesadorGrafo
+from .pert import DetalleEstimacionPERT, DetallePERT, PERT, SolucionPERT, VariabilidadRutaPERT
 from .registro import (
     EjecucionPreparada,
     ErrorPreparacionEntrada,
@@ -39,9 +51,11 @@ from .registro import (
     RegistroAlgoritmos,
 )
 from .validacion_csv import DiagnosticoCSV, ErrorValidacionCSV
+from .seleccion import OpcionAlgoritmo, SeleccionAlgoritmo, SelectorAlgoritmos
 from .visualizacion import Visualizador
 
 __all__ = [
+    "ActualizacionResidual",
     "Algoritmo",
     "AlgoritmoNoAplicableError",
     "Arista",
@@ -51,20 +65,34 @@ __all__ = [
     "CondicionesDijkstra",
     "CondicionesFlujoMaximo",
     "CondicionesPERT",
+    "CPM",
+    "DetalleArbolExpansion",
+    "DetalleCPM",
+    "DetalleDijkstra",
+    "DetalleEstimacionPERT",
+    "DetalleFlujoMaximo",
+    "DetallePERT",
     "DiagnosticoCSV",
+    "Dijkstra",
     "Entrada",
     "EjecucionPreparada",
     "ErrorValidacionCSV",
     "ErrorPreparacionEntrada",
+    "ErrorCalculoNumerico",
     "EstimacionesPERT",
     "Grafo",
+    "FordFulkerson",
+    "Kruskal",
     "LectorArchivo",
     "LectorTexto",
+    "OpcionAlgoritmo",
     "ParametrosCPM",
     "ParametrosDijkstra",
     "ParametrosFlujoMaximo",
     "ParametrosPERT",
     "Paso",
+    "PERT",
+    "Prim",
     "ProcesadorConexionesCSV",
     "ProcesadorCPMCSV",
     "ProcesadorCSV",
@@ -73,6 +101,18 @@ __all__ = [
     "Resultado",
     "RegistroAlgoritmo",
     "RegistroAlgoritmos",
+    "RutasCriticas",
+    "SeleccionAlgoritmo",
+    "SelectorAlgoritmos",
+    "SolucionArbolExpansion",
+    "SolucionCPM",
+    "SolucionDijkstra",
+    "SolucionFlujoMaximo",
+    "SolucionPERT",
+    "TiemposActividad",
+    "TramoAumento",
+    "VariabilidadRutaPERT",
     "Visualizador",
     "crear_registro_catedra",
+    "crear_registro_predeterminado",
 ]

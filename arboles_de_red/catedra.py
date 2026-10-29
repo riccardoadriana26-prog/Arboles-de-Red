@@ -3,6 +3,11 @@
 from collections.abc import Callable, Mapping
 
 from .algoritmo import Algoritmo, Entrada
+from .arbol_expansion import Kruskal, Prim
+from .cpm import CPM
+from .dijkstra import Dijkstra
+from .flujo_maximo import FordFulkerson
+from .pert import PERT
 from .parametros import (
     ParametrosCPM,
     ParametrosDijkstra,
@@ -57,14 +62,18 @@ def _parametros_carga[ParametrosT](
     return carga.parametros
 
 
-def crear_registro_catedra(
+def crear_registro_catedra[
+    PrimSolucionT, PrimDetalleT, KruskalSolucionT, KruskalDetalleT,
+    DijkstraSolucionT, DijkstraDetalleT, FlujoSolucionT, FlujoDetalleT,
+    CPMSolucionT, CPMDetalleT, PERTSolucionT, PERTDetalleT,
+](
     *,
-    prim: Callable[[], Algoritmo[None, object, object]],
-    kruskal: Callable[[], Algoritmo[None, object, object]],
-    dijkstra: Callable[[], Algoritmo[ParametrosDijkstra, object, object]],
-    flujo_maximo: Callable[[], Algoritmo[ParametrosFlujoMaximo, object, object]],
-    cpm: Callable[[], Algoritmo[ParametrosCPM, object, object]],
-    pert: Callable[[], Algoritmo[ParametrosPERT, object, object]],
+    prim: Callable[[], Algoritmo[None, PrimSolucionT, PrimDetalleT]],
+    kruskal: Callable[[], Algoritmo[None, KruskalSolucionT, KruskalDetalleT]],
+    dijkstra: Callable[[], Algoritmo[ParametrosDijkstra, DijkstraSolucionT, DijkstraDetalleT]],
+    flujo_maximo: Callable[[], Algoritmo[ParametrosFlujoMaximo, FlujoSolucionT, FlujoDetalleT]],
+    cpm: Callable[[], Algoritmo[ParametrosCPM, CPMSolucionT, CPMDetalleT]],
+    pert: Callable[[], Algoritmo[ParametrosPERT, PERTSolucionT, PERTDetalleT]],
 ) -> RegistroAlgoritmos:
     """Conecta fábricas de implementaciones; cada fábrica debe crear una instancia nueva."""
     registro = RegistroAlgoritmos()
@@ -83,3 +92,11 @@ def crear_registro_catedra(
         lambda carga, opciones: _parametros_carga(carga, opciones, ParametrosPERT, "PERT"),
     ))
     return registro
+
+
+def crear_registro_predeterminado() -> RegistroAlgoritmos:
+    """Catálogo de la aplicación con las seis implementaciones reales del issue #6."""
+    return crear_registro_catedra(
+        prim=Prim, kruskal=Kruskal, dijkstra=Dijkstra,
+        flujo_maximo=FordFulkerson, cpm=CPM, pert=PERT,
+    )

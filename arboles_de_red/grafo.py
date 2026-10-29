@@ -47,6 +47,8 @@ class Arista:
                 raise ValueError("El peso debe ser un número real finito.") from error
             if not isfinite(peso):
                 raise ValueError("El peso debe ser un número real finito.")
+            if peso == 0 and self.peso != 0:
+                raise ValueError("El peso no nulo es demasiado pequeño para representarse como float.")
             object.__setattr__(self, "peso", peso)
 
         if not isinstance(self.dirigida, bool):

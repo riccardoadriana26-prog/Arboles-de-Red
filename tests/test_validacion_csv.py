@@ -135,27 +135,27 @@ class ActividadesCSVTests(unittest.TestCase):
             (
                 ProcesadorCPMCSV(),
                 "actividad,duracion,predecesoras\nA,-1e-400,\n",
-                "duracion",
+                {"duracion"},
             ),
             (
                 ProcesadorPERTCSV(),
                 "actividad,optimista,mas_probable,pesimista,predecesoras\nA,1e-400,0,1,\n",
-                "mas_probable",
+                {"optimista", "mas_probable"},
             ),
             (
                 ProcesadorPERTCSV(),
                 "actividad,optimista,mas_probable,pesimista,predecesoras\n"
                 "A,0,1.0000000000000000000001,1,\n",
-                "pesimista",
+                {"pesimista"},
             ),
         )
-        for procesador, contenido, columna in casos:
-            with self.subTest(procesador=type(procesador).__name__, columna=columna):
+        for procesador, contenido, columnas in casos:
+            with self.subTest(procesador=type(procesador).__name__, columnas=columnas):
                 with self.assertRaises(ErrorValidacionCSV) as captura:
                     procesador.preparar_entrada(contenido)
                 self.assertEqual(
-                    [(error.linea, error.columna) for error in captura.exception.errores],
-                    [(2, columna)],
+                    {(error.linea, error.columna) for error in captura.exception.errores},
+                    {(2, columna) for columna in columnas},
                 )
 
     def test_pert_exige_tripletas_completas_finitas_no_negativas_y_ordenadas(self):

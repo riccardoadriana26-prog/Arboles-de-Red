@@ -1,0 +1,23 @@
+Name                                Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------
+arboles_de_red\__init__.py             19      0      0      0   100%
+arboles_de_red\_numeros.py             21      0      4      0   100%
+arboles_de_red\algoritmo.py            41      0      4      0   100%
+arboles_de_red\aplicabilidad.py       153      0     92      0   100%
+arboles_de_red\arbol_expansion.py      57      0     14      0   100%
+arboles_de_red\catedra.py              45      0      6      0   100%
+arboles_de_red\cpm.py                  89      0     26      0   100%
+arboles_de_red\csv.py                  71      0     22      0   100%
+arboles_de_red\dijkstra.py             81      0     24      0   100%
+arboles_de_red\flujo_maximo.py         79      0     14      0   100%
+arboles_de_red\grafo.py                55      0     32      0   100%
+arboles_de_red\lectura.py               8      0      0      0   100%
+arboles_de_red\parametros.py           18      0      0      0   100%
+arboles_de_red\pert.py                 54      0      6      0   100%
+arboles_de_red\procesamiento.py         5      0      0      0   100%
+arboles_de_red\registro.py             38      0      2      0   100%
+arboles_de_red\seleccion.py            28      0      0      0   100%
+arboles_de_red\validacion_csv.py       99      0     48      0   100%
+arboles_de_red\visualizacion.py         8      0      0      0   100%
+-------------------------------------------------------------------------------
+TOTAL                                 969      0    294      0   100%

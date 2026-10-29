@@ -1,0 +1,588 @@
+{
+  "utc": "2026-10-29T22:39:23.134044+00:00",
+  "python": "3.14.0 (tags/v3.14.0:ebf955d, Oct  7 2025, 10:15:03) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "coverage_version": "7.17.0",
+  "tests": 133,
+  "subtests": 32145,
+  "exhaustive_subtests": 31574,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "successful": true,
+  "seconds": 22.645019499992486,
+  "timings": [
+    {
+      "test": "test_algoritmo.ContratoAlgoritmoTests.test_el_motivo_es_consultable_sin_resolver",
+      "seconds": 0.002566900016972795
+    },
+    {
+      "test": "test_algoritmo.ContratoAlgoritmoTests.test_entrada_aplicable_produce_solucion_tipada_y_pasos",
+      "seconds": 0.001413299993146211
+    },
+    {
+      "test": "test_algoritmo.ContratoAlgoritmoTests.test_entrada_no_aplicable_informa_motivo_y_no_resuelve",
+      "seconds": 0.0010294000094290823
+    },
+    {
+      "test": "test_algoritmo.ContratoAlgoritmoTests.test_entrada_y_secuencia_de_pasos_son_inmutables",
+      "seconds": 0.00020029998268000782
+    },
+    {
+      "test": "test_algoritmo.ContratoAlgoritmoTests.test_otra_condicion_de_aplicacion_tambien_se_valida",
+      "seconds": 0.000367300002835691
+    },
+    {
+      "test": "test_aplicabilidad.ArbolExpansionTests.test_prim_y_kruskal_admiten_pesos_negativos_y_aristas_paralelas",
+      "seconds": 0.0031869999947957695
+    },
+    {
+      "test": "test_aplicabilidad.ArbolExpansionTests.test_rechaza_grafos_vacios_dirigidos_sin_pesos_o_desconectados",
+      "seconds": 0.00034520000917837024
+    },
+    {
+      "test": "test_aplicabilidad.CPMTests.test_actividades_independientes_y_precedencias_paralelas_no_exigen_pesos",
+      "seconds": 0.0006785000150557607
+    },
+    {
+      "test": "test_aplicabilidad.CPMTests.test_rechaza_datos_ausentes_duraciones_invalidas_y_redes_no_aon",
+      "seconds": 0.0005747999821323901
+    },
+    {
+      "test": "test_aplicabilidad.DijkstraTests.test_informa_inalcanzables_respetando_la_direccion_de_cada_arista",
+      "seconds": 0.0003293000045232475
+    },
+    {
+      "test": "test_aplicabilidad.DijkstraTests.test_verifica_origen_destino_y_pesos_sin_exigir_conectividad",
+      "seconds": 0.00026790000265464187
+    },
+    {
+      "test": "test_aplicabilidad.FlujoMaximoTests.test_exige_capacidades_y_terminales_validos_en_una_red_dirigida",
+      "seconds": 0.0004188999882899225
+    },
+    {
+      "test": "test_aplicabilidad.IntegracionAplicabilidadTests.test_ejecutar_recomprueba_las_condiciones_y_rechaza_antes_de_resolver",
+      "seconds": 0.00018709999858401716
+    },
+    {
+      "test": "test_aplicabilidad.IntegracionAplicabilidadTests.test_el_signo_y_orden_de_los_tiempos_no_se_pierden_por_redondeo",
+      "seconds": 0.0004883000219706446
+    },
+    {
+      "test": "test_aplicabilidad.IntegracionAplicabilidadTests.test_los_ejemplos_cpm_y_pert_se_verifican_desde_su_carga_csv",
+      "seconds": 0.008105099987005815
+    },
+    {
+      "test": "test_aplicabilidad.IntegracionAplicabilidadTests.test_sin_condiciones_definidas_no_se_ejecuta_la_resolucion",
+      "seconds": 0.0001781000173650682
+    },
+    {
+      "test": "test_aplicabilidad.IntegracionAplicabilidadTests.test_una_cadena_grande_y_una_actividad_independiente_son_validas_en_aon",
+      "seconds": 0.01791559997946024
+    },
+    {
+      "test": "test_aplicabilidad.PERTTests.test_verifica_estimaciones_por_actividad_y_topologia_aon",
+      "seconds": 0.0007085000106599182
+    },
+    {
+      "test": "test_componentes.ContratosComponentesTests.test_las_etapas_intercambian_datos_sin_ejecutarse_entre_si",
+      "seconds": 0.0001888000115286559
+    },
+    {
+      "test": "test_componentes.ContratosComponentesTests.test_los_contratos_exigen_implementaciones_concretas",
+      "seconds": 0.0002148000057786703
+    },
+    {
+      "test": "test_cpm.CPMTests.test_200_actividades_con_exponencial_de_rutas_sin_materializarlas",
+      "seconds": 0.027440400008345023
+    },
+    {
+      "test": "test_cpm.CPMTests.test_actividad_unica_independientes_y_componentes_desconectados",
+      "seconds": 0.000818900007288903
+    },
+    {
+      "test": "test_cpm.CPMTests.test_contraste_con_todos_los_caminos_de_dags_pequenos",
+      "seconds": 0.01096690000849776
+    },
+    {
+      "test": "test_cpm.CPMTests.test_ejemplo_catedra_tiempos_y_holguras",
+      "seconds": 0.00044419997720979154
+    },
+    {
+      "test": "test_cpm.CPMTests.test_empates_decimales_paralelas_y_orden_de_carga_no_topologico",
+      "seconds": 0.0004582999972626567
+    },
+    {
+      "test": "test_cpm.CPMTests.test_rechaza_ciclo_sin_devolver_resultado_parcial",
+      "seconds": 9.57000011112541e-05
+    },
+    {
+      "test": "test_csv.ActividadesCSVTests.test_estimaciones_y_colecciones_no_pueden_modificarse_desde_fuera",
+      "seconds": 0.00010269999620504677
+    },
+    {
+      "test": "test_csv.ActividadesCSVTests.test_pert_conserva_las_tres_estimaciones_originales_por_actividad",
+      "seconds": 0.0003786000015679747
+    },
+    {
+      "test": "test_csv.ActividadesCSVTests.test_recargar_crea_entradas_nuevas_y_no_modifica_la_carga_anterior",
+      "seconds": 0.00023609999334439635
+    },
+    {
+      "test": "test_csv.ActividadesCSVTests.test_una_actividad_sin_predecesoras_es_una_red_valida",
+      "seconds": 0.00018430000636726618
+    },
+    {
+      "test": "test_csv.ConexionesCSVTests.test_carga_grafos_de_diez_y_doscientos_vertices",
+      "seconds": 0.0020363999938126653
+    },
+    {
+      "test": "test_csv.ConexionesCSVTests.test_conserva_pesos_direccion_y_aristas_paralelas",
+      "seconds": 0.00023880001390352845
+    },
+    {
+      "test": "test_csv.ConexionesCSVTests.test_formato_de_tres_columnas_carga_conexiones_no_dirigidas",
+      "seconds": 9.82999918051064e-05
+    },
+    {
+      "test": "test_csv.EjemplosCSVTests.test_el_grafo_cargado_se_puede_visualizar_y_usar_en_una_ejecucion",
+      "seconds": 0.0009157999884337187
+    },
+    {
+      "test": "test_csv.EjemplosCSVTests.test_los_archivos_documentados_preparan_entradas_con_datos_completos",
+      "seconds": 0.0014943999995011836
+    },
+    {
+      "test": "test_csv.LecturaCSVTests.test_lee_utf8_con_o_sin_bom_sin_interpretar_el_contenido",
+      "seconds": 0.015239500004099682
+    },
+    {
+      "test": "test_csv.PrecedenciasCSVTests.test_cpm_asocia_duraciones_a_actividades_y_conserva_precedencias",
+      "seconds": 0.00038449998828582466
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_1000_redes_pert_con_distintas_estimaciones_y_empates",
+      "seconds": 0.5491034000006039
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_125_redes_mixtas_dijkstra_en_ambas_direcciones",
+      "seconds": 0.09062030000495724
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_4096_grafos_dirigidos_dijkstra_desde_cada_origen",
+      "seconds": 2.6796466000087094
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_4096_grafos_ponderados_de_cuatro_vertices_prim_y_kruskal",
+      "seconds": 1.7762876000197139
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_4096_redes_de_cuatro_vertices_con_todos_los_arcos_posibles",
+      "seconds": 2.9585053000191692
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_4096_redes_de_tres_vertices_con_capacidades_cero_uno_dos",
+      "seconds": 2.2911231000034604
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_5184_planificaciones_con_ceros_y_todas_las_precedencias_ordenadas",
+      "seconds": 2.30050460001803
+    },
+    {
+      "test": "test_exhaustivos.ExhaustivosTests.test_ciclos_en_las_64_topologias_dirigidas_de_tres_actividades",
+      "seconds": 0.0046282999974209815
+    },
+    {
+      "test": "test_grafo.AristaTests.test_acepta_decimales_finitos_convertidos_a_float",
+      "seconds": 0.00014210000517778099
+    },
+    {
+      "test": "test_grafo.AristaTests.test_aristas_paralelas_identicas_se_conservan",
+      "seconds": 9.630000567995012e-05
+    },
+    {
+      "test": "test_grafo.AristaTests.test_direccion_y_peso_pertenecen_a_cada_arista",
+      "seconds": 0.00012309997691772878
+    },
+    {
+      "test": "test_grafo.AristaTests.test_rechaza_direccion_ambigua",
+      "seconds": 0.00012209999840706587
+    },
+    {
+      "test": "test_grafo.AristaTests.test_rechaza_lazos_e_identificadores_no_alfanumericos",
+      "seconds": 0.0001275999820791185
+    },
+    {
+      "test": "test_grafo.AristaTests.test_rechaza_pesos_no_reales_o_no_finitos",
+      "seconds": 0.00027039999258704484
+    },
+    {
+      "test": "test_grafo.GrafoTests.test_acepta_componentes_desconectados_sin_aislados",
+      "seconds": 7.249999907799065e-05
+    },
+    {
+      "test": "test_grafo.GrafoTests.test_admite_actividades_aisladas_y_precedencias_sin_peso",
+      "seconds": 0.0001934999891091138
+    },
+    {
+      "test": "test_grafo.GrafoTests.test_copia_las_colecciones_y_no_permite_modificaciones",
+      "seconds": 0.0001016999885905534
+    },
+    {
+      "test": "test_grafo.GrafoTests.test_grafo_vacio_es_representable_para_validacion_en_csv",
+      "seconds": 6.419999408535659e-05
+    },
+    {
+      "test": "test_grafo.GrafoTests.test_rechaza_aristas_con_extremos_ausentes_o_id_repetido",
+      "seconds": 0.00022119999630376697
+    },
+    {
+      "test": "test_grafo.GrafoTests.test_rechaza_identificadores_de_vertice_repetidos",
+      "seconds": 9.129999671131372e-05
+    },
+    {
+      "test": "test_integracion_resolucion.IntegracionResolucionTests.test_desborde_no_se_presenta_como_solucion_valida_o_inalcanzable",
+      "seconds": 0.004761999996844679
+    },
+    {
+      "test": "test_integracion_resolucion.IntegracionResolucionTests.test_los_seis_algoritmos_con_200_vertices_conservan_la_carga_y_los_pasos",
+      "seconds": 0.21731440001167357
+    },
+    {
+      "test": "test_pert.PERTTests.test_actividad_unica_sin_incertidumbre",
+      "seconds": 0.0004585999995470047
+    },
+    {
+      "test": "test_pert.PERTTests.test_ejemplo_catedra_sin_redondeos_intermedios",
+      "seconds": 0.0005947000172454864
+    },
+    {
+      "test": "test_pert.PERTTests.test_rechaza_estimaciones_desordenadas",
+      "seconds": 0.00010189999011345208
+    },
+    {
+      "test": "test_pert.PERTTests.test_rutas_empatadas_con_varianzas_distintas_sin_elegir_una",
+      "seconds": 0.0004257999826222658
+    },
+    {
+      "test": "test_pert.PERTTests.test_variabilidad_de_200_actividades_se_enumera_a_demanda",
+      "seconds": 0.02690870000515133
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_capacidad_subnormal_representable_conserva_su_flujo",
+      "seconds": 0.00039989998913370073
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_carga_y_modelo_rechazan_no_ceros_que_se_normalizarian_a_cero",
+      "seconds": 0.0006545999785885215
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_cpm_no_convierte_una_duracion_positiva_en_cero_por_subdesborde",
+      "seconds": 0.0002432999899610877
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_dijkstra_conserva_la_primera_ruta_en_un_empate_decimal",
+      "seconds": 0.00027210000553168356
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_dijkstra_no_elige_una_ruta_mas_cara_por_redondear_la_suma",
+      "seconds": 0.00019570000586099923
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_dijkstra_no_falla_por_un_candidato_descartado_fuera_de_rango",
+      "seconds": 0.0002209999947808683
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_errores_de_calculo_no_devuelven_nan_ni_inf",
+      "seconds": 0.00012480001896619797
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_flujo_informa_desborde_del_total",
+      "seconds": 0.00020409998251125216
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_pert_estimaciones_grandes_iguales_sin_desborde_intermedio",
+      "seconds": 0.0002857999934349209
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_pert_informa_desborde_de_la_suma_de_varianzas_al_recorrer_la_ruta",
+      "seconds": 0.00034180001239292324
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_pert_informa_desborde_de_varianza",
+      "seconds": 0.0001576000067871064
+    },
+    {
+      "test": "test_precision.PrecisionTests.test_pert_no_convierte_una_varianza_positiva_en_cero_por_subdesborde",
+      "seconds": 0.00014990000636316836
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_cpm_y_pert_en_dag_completo_de_200_actividades",
+      "seconds": 1.5738694000174291
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_cpm_y_pert_escalan_tiempos_y_varianzas_con_distintas_potencias",
+      "seconds": 0.000994600006379187
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_escalar_pesos_y_cambiar_nombres_conserva_las_soluciones",
+      "seconds": 0.0006346000009216368
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_flujo_en_red_de_200_vertices_9999_arcos_y_99_aumentos",
+      "seconds": 2.8142224999901373
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_flujo_escalar_capacidades_y_arcos_paralelos_conservan_el_valor",
+      "seconds": 0.0009407999750692397
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_los_pasos_de_dijkstra_reconstruyen_sus_distancias",
+      "seconds": 0.01406919999863021
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_los_seis_resolutores_en_cadenas_de_1500_vertices_sin_recursion",
+      "seconds": 3.628506799985189
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_parametros_decimal_y_fraccion_y_copias_de_mapas",
+      "seconds": 0.001040400005877018
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_precedencias_redundantes_y_duraciones_cero",
+      "seconds": 0.0005773000011686236
+    },
+    {
+      "test": "test_propiedades_core.PropiedadesCoreTests.test_prim_kruskal_y_dijkstra_en_grafo_completo_de_200_vertices",
+      "seconds": 1.472814799984917
+    },
+    {
+      "test": "test_registro.RegistroAlgoritmosTests.test_ampliar_el_registro_conserva_las_selecciones_y_entradas_anteriores",
+      "seconds": 0.0003862000012304634
+    },
+    {
+      "test": "test_registro.RegistroAlgoritmosTests.test_el_registro_generico_conserva_los_tipos_estaticos",
+      "seconds": 0.0002584000176284462
+    },
+    {
+      "test": "test_registro.RegistroAlgoritmosTests.test_rechaza_identificadores_repetidos_sin_sustituir_el_registro_original",
+      "seconds": 0.0002632999967318028
+    },
+    {
+      "test": "test_registro.RegistroAlgoritmosTests.test_registra_prepara_y_ejecuta_con_los_tipos_propios_del_algoritmo",
+      "seconds": 0.0002542000147514045
+    },
+    {
+      "test": "test_registro.RegistroCatedraTests.test_cada_ejecucion_tiene_su_instancia_y_no_se_sustituye_un_algoritmo_incompatible",
+      "seconds": 0.00030220000189729035
+    },
+    {
+      "test": "test_registro.RegistroCatedraTests.test_informa_parametros_ausentes_y_no_inventa_datos_de_actividades",
+      "seconds": 0.0006929999799467623
+    },
+    {
+      "test": "test_registro.RegistroCatedraTests.test_los_seis_registros_preparan_sus_parametros_y_conservan_solucion_y_pasos",
+      "seconds": 0.0019167000136803836
+    },
+    {
+      "test": "test_resolutores_redes.ArbolExpansionTests.test_contraste_con_todos_los_subconjuntos_de_aristas",
+      "seconds": 0.012416399986250326
+    },
+    {
+      "test": "test_resolutores_redes.ArbolExpansionTests.test_ejemplo_catedra_y_arbol_de_un_solo_vertice",
+      "seconds": 0.0003577999887056649
+    },
+    {
+      "test": "test_resolutores_redes.ArbolExpansionTests.test_pesos_negativos_paralelas_y_empates_estables",
+      "seconds": 0.0003341000119689852
+    },
+    {
+      "test": "test_resolutores_redes.ArbolExpansionTests.test_rechaza_antes_de_resolver",
+      "seconds": 0.0001364000199828297
+    },
+    {
+      "test": "test_resolutores_redes.DijkstraTests.test_contraste_con_enumeracion_de_caminos_simples",
+      "seconds": 0.005332900007488206
+    },
+    {
+      "test": "test_resolutores_redes.DijkstraTests.test_ejemplo_catedra",
+      "seconds": 0.00044570001773536205
+    },
+    {
+      "test": "test_resolutores_redes.DijkstraTests.test_rechaza_peso_negativo",
+      "seconds": 0.00015390000771731138
+    },
+    {
+      "test": "test_resolutores_redes.DijkstraTests.test_red_mixta_paralelas_cero_inalcanzables_y_origen_igual_destino",
+      "seconds": 0.0012002000003121793
+    },
+    {
+      "test": "test_resolutores_redes.FordFulkersonTests.test_contraste_con_todos_los_cortes_de_redes_pequenas",
+      "seconds": 0.008963500004028901
+    },
+    {
+      "test": "test_resolutores_redes.FordFulkersonTests.test_ejemplo_de_18_y_red_sin_camino",
+      "seconds": 0.0007050999847706407
+    },
+    {
+      "test": "test_resolutores_redes.FordFulkersonTests.test_el_camino_inverso_deshace_una_asignacion_anterior",
+      "seconds": 0.000888100010342896
+    },
+    {
+      "test": "test_resolutores_redes.FordFulkersonTests.test_paralelas_antiparalelas_y_capacidades_decimales",
+      "seconds": 0.0006176999886520207
+    },
+    {
+      "test": "test_seleccion.SeleccionTests.test_informa_incompatibilidad_sin_elegir_otro_algoritmo",
+      "seconds": 0.00027329998556524515
+    },
+    {
+      "test": "test_seleccion.SeleccionTests.test_informa_parametros_faltantes_y_terminales_inexistentes",
+      "seconds": 0.0002445999998599291
+    },
+    {
+      "test": "test_seleccion.SeleccionTests.test_lista_y_ejecuta_los_seis_algoritmos_reales_desde_csv",
+      "seconds": 0.004529399971943349
+    },
+    {
+      "test": "test_seleccion.SeleccionTests.test_seleccion_no_resuelve_y_admite_nuevos_registros_sin_cambios",
+      "seconds": 0.0004972000024281442
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_120_ejecuciones_concurrentes_comparten_instancia_sin_compartir_estado",
+      "seconds": 0.028441700007533655
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_archivo_utf8_bom_saltos_de_linea_y_errores_de_lectura",
+      "seconds": 0.020546400017337874
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_consulta_de_inalcanzables_rechaza_parametros_invalidos_con_el_mismo_motivo",
+      "seconds": 0.00027039999258704484
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_el_modelo_rechaza_pesos_fuera_del_rango_float",
+      "seconds": 0.0001024999946821481
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_el_modelo_rechaza_tipos_ambiguos_e_identificadores_invalidos",
+      "seconds": 0.0004697999975178391
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_error_de_carga_o_seleccion_no_destruye_una_ejecucion_anterior",
+      "seconds": 0.0008950000046752393
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_matriz_de_compatibilidad_antes_de_ejecutar",
+      "seconds": 0.00212610000744462
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_todas_las_permutaciones_de_columnas_con_y_sin_comillas",
+      "seconds": 0.017071900016162544
+    },
+    {
+      "test": "test_uso_core.UsoCoreTests.test_todas_las_soluciones_y_detalles_son_inmutables",
+      "seconds": 0.0025209000159520656
+    },
+    {
+      "test": "test_validacion_csv.ActividadesCSVTests.test_cpm_exige_duracion_finita_no_negativa_y_reune_otros_errores",
+      "seconds": 0.0007681999995838851
+    },
+    {
+      "test": "test_validacion_csv.ActividadesCSVTests.test_el_redondeo_no_oculta_duraciones_negativas_ni_estimaciones_desordenadas",
+      "seconds": 0.00040260000969283283
+    },
+    {
+      "test": "test_validacion_csv.ActividadesCSVTests.test_pert_exige_tripletas_completas_finitas_no_negativas_y_ordenadas",
+      "seconds": 0.0006490999949164689
+    },
+    {
+      "test": "test_validacion_csv.ActividadesCSVTests.test_reune_identificadores_duplicados_y_predecesoras_invalidas_en_aon",
+      "seconds": 0.00045980000868439674
+    },
+    {
+      "test": "test_validacion_csv.EncabezadoCSVTests.test_cada_estructura_exige_sus_columnas_y_rechaza_columnas_ajenas",
+      "seconds": 0.0003274999908171594
+    },
+    {
+      "test": "test_validacion_csv.EncabezadoCSVTests.test_reune_columnas_faltantes_repetidas_y_no_admitidas",
+      "seconds": 0.0001432000135537237
+    },
+    {
+      "test": "test_validacion_csv.EstructuraCSVTests.test_informa_filas_incompletas_y_sobrantes_con_su_linea_fisica",
+      "seconds": 0.00018089998047798872
+    },
+    {
+      "test": "test_validacion_csv.EstructuraCSVTests.test_las_comillas_mal_formadas_producen_un_diagnostico",
+      "seconds": 0.00024059999850578606
+    },
+    {
+      "test": "test_validacion_csv.EstructuraCSVTests.test_las_lineas_se_conservan_con_campos_entre_comillas_y_saltos_de_linea",
+      "seconds": 0.00014179997378960252
+    },
+    {
+      "test": "test_validacion_csv.EstructuraCSVTests.test_rechaza_archivos_sin_conexiones_ni_actividades",
+      "seconds": 0.000548599986359477
+    },
+    {
+      "test": "test_validacion_csv.EstructuraCSVTests.test_un_encabezado_mal_formado_tambien_tiene_diagnostico",
+      "seconds": 0.00014900002861395478
+    },
+    {
+      "test": "test_validacion_csv.EstructuraCSVTests.test_un_error_de_sintaxis_no_oculta_los_errores_de_filas_anteriores",
+      "seconds": 0.00014170000213198364
+    },
+    {
+      "test": "test_validacion_csv.IntegridadCargaCSVTests.test_los_ciclos_y_la_desconexion_no_son_errores_del_csv",
+      "seconds": 0.00035909999860450625
+    },
+    {
+      "test": "test_validacion_csv.IntegridadCargaCSVTests.test_una_carga_invalida_no_modifica_la_anterior_y_permite_volver_a_cargar",
+      "seconds": 0.0007776000129524618
+    },
+    {
+      "test": "test_validacion_csv.ValoresConexionesCSVTests.test_reune_errores_de_valores_y_estructura_sin_devolver_un_grafo_parcial",
+      "seconds": 0.00024369999300688505
+    }
+  ],
+  "source_sha256": {
+    "arboles_de_red/__init__.py": "5e8572303d9640fefc9fe4c16acff448ca3b0763e63af8341d3ed30dfa63038e",
+    "arboles_de_red/_numeros.py": "4d9dfec56f74649418c90a9ee40597c7e83a07cd4b510c529ae6cb95d693c135",
+    "arboles_de_red/algoritmo.py": "4f37be447771d24aaa45c35ddd6a563025f272ac67d62da71cd28d09377bc120",
+    "arboles_de_red/aplicabilidad.py": "990bef9fd404b9e1fc88eb024194e057422cae44db7396dc5ccb6a4416da5ba1",
+    "arboles_de_red/arbol_expansion.py": "39fd3b90073dc3b3314c63b7c2a371279bf8cd7a15d4f6ba02551eaa8f2afa69",
+    "arboles_de_red/catedra.py": "1974a14a8ceab19cfccde3a5b34dc93d7645a33759ffa37da4e846b8438c31b1",
+    "arboles_de_red/cpm.py": "4ac3feb0d11c700ebb903c88da8b1ebf744df8ddcb492de2e3d1a1cdd66dfcc8",
+    "arboles_de_red/csv.py": "85d4e785cd813ecd140e830f14d393542afd027cd28bbedf6663279b204d3483",
+    "arboles_de_red/dijkstra.py": "1d46f35bf7e5f6f4e6c063eafc689d948d3f6c82f07b892cb605e82a6d0226cb",
+    "arboles_de_red/flujo_maximo.py": "a52aca4ec6771f17f3c8261f8ad1f52a1bbd724e6fc26cf1343f40e50892c3bb",
+    "arboles_de_red/grafo.py": "bec30115b128158f074dd9199f14d750d144540435b293b032b860ff9fbb55a1",
+    "arboles_de_red/lectura.py": "47e32e2fa00afc737cacc357cfe488ee711b4b98db46a4b13e0d0f19f04e1e10",
+    "arboles_de_red/parametros.py": "8aed068ca462b65cc816583a0516e3b2da48b8134f3e12f4be06bac675d3615a",
+    "arboles_de_red/pert.py": "2f4099e10b27783766ccf4d02251a8d682016e3513a9e1bff9979934d2cbf256",
+    "arboles_de_red/procesamiento.py": "4b3ec178fa91ba7bc9ec36a43980ab67c4fefc7edbf0821a94f67828bbd6ca93",
+    "arboles_de_red/registro.py": "510ba69ec2979c925c91f33b783585be4a3aa500aae6c51fe3cffe74715b2e4b",
+    "arboles_de_red/seleccion.py": "3520506e40824b65cb8270711442514afee2e73472a9e629aed621aef34eb227",
+    "arboles_de_red/validacion_csv.py": "c50eeaeccff9f954d772d0f00158ffc9141a415344d1e0b9467cb8415a7cdee6",
+    "arboles_de_red/visualizacion.py": "d0a4a5ce0166e684508a4fa183e90e2f48c48ce6c6b7a98cccec50eda8a40589"
+  },
+  "test_sha256": {
+    "tests/oraculos.py": "bba056bdc525c076aa5e4c48711bf1d0820b0f16a5a0deb94c06d8ccc3f3d5a3",
+    "tests/test_algoritmo.py": "57e4dc6145b82b809d0dc15c9ad1d8ba6e29fcf03cb5fd9051c4824b3dff3591",
+    "tests/test_aplicabilidad.py": "0bb0924633d8f24d3b2799691cfdba6a6ed1501a03d064631d3b5aed847db617",
+    "tests/test_componentes.py": "85c19de36a9928b94bf91ac5a8c18f67714e861d8c6f46a977af93b54288cfd9",
+    "tests/test_cpm.py": "7df56945212c23f8bd03c406e8975b7890a8d025b910e3e40cec7662563e82a8",
+    "tests/test_csv.py": "309ca914ae997ae488009f564bec974dc9e7704408ec97764fc560d4ef5fa697",
+    "tests/test_exhaustivos.py": "5e95321c4cfa9a5865814ce0cf29b26e0319ef9e9e62569ff07c71d4fd69a2f0",
+    "tests/test_grafo.py": "a47cd9f8c175696cce6cfd2ead03e54562b16366af34ddccf8fbf9bad36c0207",
+    "tests/test_integracion_resolucion.py": "b8b3156c3a93de7b6a11abe4df43536ef14b1624411c39c441f59607ddefab97",
+    "tests/test_pert.py": "4efabcc23f42f6c5145902fabadbb53bc1ab837c4c3b36bf02d8a068b48c0ffb",
+    "tests/test_precision.py": "307dc1500de93f44dd3ed0a5e20f867173f8fb75b139334d4002d54884e3c1ac",
+    "tests/test_propiedades_core.py": "7b2d0589d3a1af542abe429cf01027ad88989781c4b12e03a27a3cbadc622270",
+    "tests/test_registro.py": "4a614839888cadecfc9ca0d1063b2ea9a591fcd5bce247d51804851ca696ed96",
+    "tests/test_resolutores_redes.py": "09b6c8115014dd5ba911049f1019444789441c0f55340d3c7acd9c1e2736fe4b",
+    "tests/test_seleccion.py": "3739625e3afa7c459a6f5bdbf46e947036c54ba72da12b494ffdfd84b0c9c51a",
+    "tests/test_uso_core.py": "ea0e782ed75ec68d61cfc5db1f337d891d87835bd9358edeef66bc5c3f2688be",
+    "tests/test_validacion_csv.py": "d4bd1c35dee71f33d200265993d3c236633fd282637f68ad270de7bb8fa05f2a"
+  }
+}

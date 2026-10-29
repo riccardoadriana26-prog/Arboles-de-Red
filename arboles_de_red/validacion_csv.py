@@ -108,6 +108,9 @@ class ValidacionCSV:
         if no_negativo and valor < 0:
             self.agregar(fila.linea, columna, "El valor no puede ser negativo.")
             return None
+        if float(valor) == 0 and valor != 0:
+            self.agregar(fila.linea, columna, "El valor no nulo es demasiado pequeño para representarse como float.")
+            # Conservar el decimal para poder diagnosticar también su orden en PERT.
         return valor
 
     def actividades(self) -> None:
