@@ -4,6 +4,13 @@ version = "0.1.0"
 description = "Modelo común de grafos para algoritmos de redes"
 requires-python = ">=3.14"
 
+[project.optional-dependencies]
+poc-streamlit-estatica = [
+    "streamlit==1.66.1",
+    "pyvis==0.3.2",
+    "networkx>=3.2,<4",
+]
+
 [build-system]
 requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
