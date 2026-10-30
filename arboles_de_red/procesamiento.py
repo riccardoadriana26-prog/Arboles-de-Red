@@ -10,7 +10,7 @@ from arboles_de_red.aplicabilidad import (
     CondicionesFlujoMaximo,
     CondicionesPERT,
 )
-from arboles_de_red.parametros import Entrada, Resultado
+from .algoritmo import Entrada, Resultado
 
 from .cpm import CPM
 from .arbol_expansion import Prim, Kruskal
