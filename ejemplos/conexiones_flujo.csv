@@ -1,0 +1,9 @@
+origen,destino,peso,dirigida
+S,A,1,true
+S,B,1,true
+A,C,1,true
+A,D,0.5,true
+B,C,1,true
+C,T,1,true
+D,T,1,true
+A,D,0.5,true
