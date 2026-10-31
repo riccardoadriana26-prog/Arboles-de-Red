@@ -21,8 +21,12 @@ from arboles_de_red.reconstruccion import (
 from arboles_de_red.formato_visual import formatear_numero
 from arboles_de_red.presentacion_pasos import resumir_paso
 from arboles_de_red.proyeccion_resultados import (
-    ProyeccionArbol, ProyeccionCPM, ProyeccionDijkstra, ProyeccionFlujo,
-    ProyeccionPERT, proyectar_resultado,
+    ProyeccionDijkstra, proyectar_resultado,
+)
+from arboles_de_red.informacion_resultados import (
+    InformacionArbol, InformacionDijkstra, InformacionFlujo, InformacionCPM,
+    InformacionPERT, InformacionResultado, VariabilidadInterrumpida,
+    obtener_informacion_resultado,
 )
 from arboles_de_red.seleccion import SelectorAlgoritmos
 from arboles_de_red.registro import ErrorPreparacionEntrada
@@ -137,35 +141,93 @@ def _mostrar_estado(estado_visual, entrada):
         st.json(_serializable(estado_visual.estado, compactar_numeros=compactar))
 
 
-def resumen_resultado(proyeccion, resultado) -> tuple[tuple[str, str], ...]:
-    """Describe la solución final sin consultar sus pasos ni enumerar rutas críticas."""
+def resumen_resultado(informacion: InformacionResultado, proyeccion) -> tuple[tuple[str, str], ...]:
+    """Reutiliza HU-09 y conserva los datos adicionales del resumen HU-08."""
     nombres = {"prim": "Prim", "kruskal": "Kruskal", "dijkstra": "Dijkstra",
                "flujo_maximo": "Ford–Fulkerson", "cpm": "CPM", "pert": "PERT"}
-    campos = [("Algoritmo", nombres[proyeccion.algoritmo])]
-    if isinstance(proyeccion, ProyeccionArbol):
-        campos.extend((("Aristas del árbol", str(len(proyeccion.aristas))),
-                       ("Peso total", formatear_numero(proyeccion.peso_total))))
-    elif isinstance(proyeccion, ProyeccionDijkstra):
-        campos.extend((("Origen", proyeccion.origen),
-                       ("Destino consultado", proyeccion.destino or "Sin seleccionar")))
-        if proyeccion.destino is None:
+    campos = [("Algoritmo", nombres[informacion.algoritmo])]
+    if isinstance(informacion, InformacionArbol):
+        campos.extend((("Aristas del árbol", str(informacion.aristas_arbol)),
+                       ("Peso total", formatear_numero(informacion.peso_total))))
+    elif isinstance(informacion, InformacionDijkstra):
+        campos.extend((("Origen", informacion.origen),
+                       ("Destino consultado", informacion.destino or "Sin seleccionar")))
+        if informacion.condicion == "sin_consulta":
             campos.append(("Ruta", "Seleccioná un destino para consultar la ruta final"))
-        elif proyeccion.ruta is None:
+        elif informacion.condicion == "inalcanzable":
             campos.append(("Ruta", "Destino inalcanzable desde el origen"))
         else:
-            campos.extend((("Ruta", " → ".join(proyeccion.ruta)),
-                           ("Costo", formatear_numero(proyeccion.costo))))
-    elif isinstance(proyeccion, ProyeccionFlujo):
-        campos.extend((("Flujo máximo", formatear_numero(proyeccion.flujo_maximo)),
+            campos.extend((("Ruta", " → ".join(informacion.ruta)),
+                           ("Costo", formatear_numero(informacion.costo))))
+    elif isinstance(informacion, InformacionFlujo):
+        campos.extend((("Flujo máximo", formatear_numero(informacion.flujo_maximo)),
                        ("Capacidad del corte mínimo", formatear_numero(proyeccion.capacidad_corte))))
-    elif isinstance(proyeccion, (ProyeccionCPM, ProyeccionPERT)):
-        duracion = (proyeccion.duracion_proyecto if isinstance(proyeccion, ProyeccionCPM)
-                    else proyeccion.duracion_esperada)
-        campos.extend((("Duración total" if isinstance(proyeccion, ProyeccionCPM) else "Duración esperada",
+    elif isinstance(informacion, (InformacionCPM, InformacionPERT)):
+        duracion = (informacion.duracion_proyecto if isinstance(informacion, InformacionCPM)
+                    else informacion.duracion_esperada)
+        campos.extend((("Duración total" if isinstance(informacion, InformacionCPM) else "Duración esperada",
                         formatear_numero(duracion)),
                        ("Actividades críticas", str(len(proyeccion.actividades_criticas))),
-                       ("Cantidad de rutas críticas", str(resultado.solucion.rutas_criticas.cantidad))))
+                       ("Cantidad de rutas críticas", str(informacion.rutas_criticas.cantidad_total))))
     return tuple(campos)
+
+
+def _mostrar_detalles_resultado(informacion: InformacionResultado) -> None:
+    """Presenta los detalles posteriores al grafo, sin repetir el resumen común."""
+    if isinstance(informacion, (InformacionArbol, InformacionDijkstra)):
+        return  # Su información ya está completa en el resumen principal.
+    if isinstance(informacion, InformacionFlujo):
+        st.markdown("#### Flujos por arco")
+        st.dataframe([
+            {"ID": a.identificador, "Origen": a.origen, "Destino": a.destino,
+             "Dirección": "Dirigida" if a.dirigida else "No dirigida",
+             "Capacidad": formatear_numero(a.capacidad_original), "Flujo": formatear_numero(a.flujo)}
+            for a in informacion.arcos
+        ], hide_index=True)
+        return
+
+    st.markdown("#### Rutas críticas")
+    muestra = informacion.rutas_criticas
+    for indice, ruta in enumerate(muestra.rutas, 1):
+        st.write(f"Ruta {indice}: {' → '.join(ruta)}")
+    if muestra.hay_mas:
+        st.caption(f"Mostrando {len(muestra.rutas)} de {muestra.cantidad_total} rutas críticas.")
+
+    st.markdown("#### Actividades")
+    columnas = []
+    if isinstance(informacion, InformacionPERT):
+        columnas.extend((("Optimista", "optimista"), ("Más probable", "mas_probable"),
+                         ("Pesimista", "pesimista"), ("Tiempo esperado", "tiempo_esperado"),
+                         ("Varianza", "varianza")))
+    columnas.extend((("IC", "ic"), ("TC", "tc"), ("IL", "il"), ("TL", "tl"), ("Holgura", "holgura")))
+    # Los textos son copias para la tabla. La información tipada conserva floats.
+    st.dataframe([
+        {"Actividad": fila.actividad,
+         **{titulo: formatear_numero(getattr(fila, atributo)) for titulo, atributo in columnas}}
+        for fila in informacion.actividades
+    ], hide_index=True)
+
+    if isinstance(informacion, InformacionPERT):
+        st.markdown("#### Variabilidad de rutas críticas")
+        if muestra.cantidad_total == 1:
+            st.caption("Variabilidad de la única ruta crítica del proyecto.")
+        else:
+            st.caption("Las métricas corresponden a cada ruta crítica, bajo la hipótesis de actividades independientes.")
+        variabilidad = informacion.variabilidad
+        if variabilidad.valores:
+            st.dataframe([
+                {"Ruta": " → ".join(v.actividades),
+                 "Duración esperada": formatear_numero(v.duracion_esperada),
+                 "Varianza": formatear_numero(v.varianza),
+                 "Desviación estándar": formatear_numero(v.desviacion_estandar)}
+                for v in variabilidad.valores
+            ], hide_index=True)
+        if isinstance(variabilidad, VariabilidadInterrumpida):
+            st.warning(f"No se pudo evaluar la variabilidad de la ruta {' → '.join(variabilidad.error.ruta)}: "
+                       f"{variabilidad.error.mensaje}")
+            if variabilidad.rutas_no_evaluadas:
+                st.warning("Las rutas posteriores de la muestra no pudieron evaluarse porque el generador "
+                           "se interrumpió: " + "; ".join(" → ".join(r) for r in variabilidad.rutas_no_evaluadas))
 
 
 def main():
@@ -200,8 +262,10 @@ def main():
     grafo = entrada_original.grafo
     st.caption(f"Archivo: {archivo.name}")
     col_nodos, col_aristas = st.columns(2)
-    col_nodos.metric("Vértices", len(grafo.vertices))
-    col_aristas.metric("Conexiones / precedencias", len(grafo.aristas))
+    indicador_vertices = col_nodos.empty()
+    indicador_aristas = col_aristas.empty()
+    indicador_vertices.metric("Vértices", len(grafo.vertices))
+    indicador_aristas.metric("Conexiones / precedencias", len(grafo.aristas))
 
     visualizador = VisualizadorPyVis()
     if st.session_state.get("hu07_clave_visual") != clave_visual:
@@ -331,14 +395,24 @@ def main():
                                                 placeholder="Elegí un destino", key="hu08_destino")
                 if destino_consulta is not None:
                     proyeccion = proyeccion.consultar_destino(destino_consulta)
+            informacion = obtener_informacion_resultado(
+                st.session_state["hu07_entrada"], resultado, st.session_state["hu07_algoritmo"],
+                destino=proyeccion.destino if isinstance(proyeccion, ProyeccionDijkstra) else None,
+            )
+            indicador_vertices.metric("Vértices", informacion.general.vertices_originales)
+            indicador_aristas.metric("Conexiones / precedencias", informacion.general.aristas_originales)
             st.subheader("Resultado final")
-            for etiqueta, valor in resumen_resultado(proyeccion, resultado):
+            st.subheader("Información del resultado")
+            st.markdown(f"**Vértices del grafo original:** {informacion.general.vertices_originales}")
+            st.markdown(f"**Aristas del grafo original:** {informacion.general.aristas_originales}")
+            for etiqueta, valor in resumen_resultado(informacion, proyeccion):
                 st.markdown(f"**{etiqueta}:** {valor}")
             red = visualizador.construir_red_resultado(
                 st.session_state["hu07_entrada"], formato, proyeccion,
                 st.session_state["hu07_posiciones_ejecucion"],
             )
             st.iframe(visualizador.generar_html(red), height=730, tab_index=0)
+            _mostrar_detalles_resultado(informacion)
         except ValueError as error:
             st.error(str(error))
         return
