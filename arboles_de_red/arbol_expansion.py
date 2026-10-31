@@ -16,10 +16,20 @@ class SolucionArbolExpansion:
 
 @dataclass(frozen=True, slots=True)
 class DetalleArbolExpansion:
+    """Decisión de una arista procesada o de una frontera de Prim.
+
+    En Prim, ``aristas_evaluadas`` contiene toda la frontera inspeccionada y
+    ``arista`` identifica la elegida; las demás no se consideran rechazadas.
+    Kruskal registra una arista evaluada por paso y usa ``aceptada`` para
+    distinguir la unión de componentes del rechazo por ciclo. ``None`` indica
+    el paso inicial, que todavía no decide sobre una arista.
+    """
+
     arista: int | None
-    aceptada: bool
+    aceptada: bool | None
     aristas_arbol: tuple[int, ...]
     peso_acumulado: float
+    aristas_evaluadas: tuple[int, ...] = ()
 
 
 def _peso(arista: Arista) -> float:
@@ -37,19 +47,30 @@ class Prim(Algoritmo[None, SolucionArbolExpansion, DetalleArbolExpansion]):
         visitados = {grafo.vertices[0]}
         elegidas: list[Arista] = []
         pasos = [Paso(1, "Se inicia Prim en el primer vértice cargado.",
-                      (grafo.vertices[0],), (), DetalleArbolExpansion(None, True, (), 0.0))]
+                      (grafo.vertices[0],), (), DetalleArbolExpansion(None, None, (), 0.0))]
         while len(visitados) < len(grafo.vertices):
             # Frontera: exactamente uno de los extremos pertenece al árbol.
-            candidatas = (a for a in grafo.aristas
-                          if (a.origen in visitados) != (a.destino in visitados))
+            candidatas = tuple(a for a in grafo.aristas
+                               if (a.origen in visitados) != (a.destino in visitados))
             arista = min(candidatas, key=lambda a: (_peso(a), a.identificador))
             elegidas.append(arista)
             visitados.update((arista.origen, arista.destino))
             ids = tuple(a.identificador for a in elegidas)
             peso = sumar(_peso(a) for a in elegidas)
-            pasos.append(Paso(len(pasos) + 1, "Se incorpora la arista de menor peso de la frontera.",
-                              (arista.origen, arista.destino), (arista.identificador,),
-                              DetalleArbolExpansion(arista.identificador, True, ids, peso)))
+            ids_evaluados = tuple(c.identificador for c in candidatas)
+            vertices_evaluados = tuple(dict.fromkeys(
+                vertice for candidata in candidatas
+                for vertice in (candidata.origen, candidata.destino)
+            ))
+            pasos.append(Paso(
+                len(pasos) + 1,
+                "Se evalúa la frontera y se incorpora su arista de menor peso.",
+                vertices_evaluados,
+                ids_evaluados,
+                DetalleArbolExpansion(
+                    arista.identificador, True, ids, peso, ids_evaluados
+                ),
+            ))
         return Resultado(SolucionArbolExpansion(tuple(elegidas), sumar(_peso(a) for a in elegidas)), tuple(pasos))
 
 
@@ -70,7 +91,7 @@ class Kruskal(Algoritmo[None, SolucionArbolExpansion, DetalleArbolExpansion]):
 
         elegidas: list[Arista] = []
         pasos = [Paso(1, "Se inicia un componente por vértice y se ordenan las aristas por peso.",
-                      grafo.vertices, (), DetalleArbolExpansion(None, True, (), 0.0))]
+                      grafo.vertices, (), DetalleArbolExpansion(None, None, (), 0.0))]
         for arista in sorted(grafo.aristas, key=lambda a: (_peso(a), a.identificador)):
             if len(elegidas) == len(grafo.vertices) - 1:
                 break
@@ -88,6 +109,8 @@ class Kruskal(Algoritmo[None, SolucionArbolExpansion, DetalleArbolExpansion]):
                 "Se unen dos componentes." if aceptada else "Se rechaza la arista porque formaría un ciclo.",
                 (arista.origen, arista.destino), (arista.identificador,),
                 DetalleArbolExpansion(arista.identificador, aceptada,
-                                     tuple(a.identificador for a in elegidas), sumar(_peso(a) for a in elegidas)),
+                                     tuple(a.identificador for a in elegidas),
+                                     sumar(_peso(a) for a in elegidas),
+                                     (arista.identificador,)),
             ))
         return Resultado(SolucionArbolExpansion(tuple(elegidas), sumar(_peso(a) for a in elegidas)), tuple(pasos))

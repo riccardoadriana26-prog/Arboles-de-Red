@@ -46,7 +46,65 @@ class ArbolExpansionTests(unittest.TestCase):
         ciclico = Kruskal().ejecutar(Entrada(grafo("ABCD", [
             ("A", "B", 1), ("B", "C", 2), ("A", "C", 3), ("C", "D", 4),
         ]), None))
-        self.assertTrue(any(not p.detalle.aceptada for p in ciclico.pasos))
+        decisiones = ciclico.pasos[1:]
+        self.assertEqual([p.detalle.arista for p in decisiones], [0, 1, 2, 3])
+        self.assertEqual([p.detalle.aristas_evaluadas for p in decisiones],
+                         [(0,), (1,), (2,), (3,)])
+        self.assertEqual([p.detalle.aceptada for p in decisiones],
+                         [True, True, False, True])
+        self.assertEqual([p.detalle.aristas_arbol for p in decisiones],
+                         [(0,), (0, 1), (0, 1), (0, 1, 3)])
+
+    def test_prim_registra_frontera_evaluada_sin_rechazar_candidatas_pendientes(self):
+        red = Grafo(tuple("ABCD"), (
+            Arista(17, "A", "B", 1, False),
+            Arista(23, "B", "C", 2, False),
+            Arista(31, "A", "C", 4, False),
+            Arista(47, "C", "D", 3, False),
+            Arista(59, "B", "D", 7, False),
+        ))
+
+        resultado = Prim().ejecutar(Entrada(red, None))
+        decisiones = resultado.pasos[1:]
+
+        self.assertEqual(
+            [paso.detalle.aristas_evaluadas for paso in decisiones],
+            [(17, 31), (23, 31, 59), (47, 59)],
+        )
+        self.assertEqual(
+            [paso.detalle.arista for paso in decisiones], [17, 23, 47]
+        )
+        self.assertTrue(all(paso.detalle.aceptada is True for paso in decisiones))
+        self.assertEqual(
+            [paso.detalle.aristas_arbol for paso in decisiones],
+            [(17,), (17, 23), (17, 23, 47)],
+        )
+        self.assertEqual(
+            [paso.aristas_destacadas for paso in decisiones],
+            [(17, 31), (23, 31, 59), (47, 59)],
+        )
+        self.assertEqual(decisiones[0].vertices_destacados, ("A", "B", "C"))
+        self.assertNotIn(23, decisiones[0].detalle.aristas_evaluadas)
+        self.assertIn(23, decisiones[1].detalle.aristas_evaluadas)
+        self.assertIn(31, decisiones[0].detalle.aristas_evaluadas)
+        ids_aceptados = [paso.detalle.arista for paso in decisiones]
+        self.assertNotIn(31, ids_aceptados)
+        self.assertTrue(all(paso.detalle.aceptada is not False for paso in decisiones))
+        aristas_por_id = {arista.identificador: arista for arista in red.aristas}
+        for paso in decisiones:
+            extremos = {
+                vertice
+                for identificador in paso.detalle.aristas_evaluadas
+                for vertice in (
+                    aristas_por_id[identificador].origen,
+                    aristas_por_id[identificador].destino,
+                )
+            }
+            self.assertEqual(set(paso.vertices_destacados), extremos)
+        self.assertEqual(
+            [paso.numero for paso in resultado.pasos],
+            list(range(1, len(resultado.pasos) + 1)),
+        )
 
     def test_contraste_con_todos_los_subconjuntos_de_aristas(self):
         azar = Random(431)
@@ -83,6 +141,67 @@ class DijkstraTests(unittest.TestCase):
         self.assertEqual(solucion.ruta, ("A", "B", "C", "F", "G"))
         self.assertEqual(solucion.aristas_ruta, (0, 2, 4, 7))
         self.assertEqual(solucion.costo, 70)
+
+    def test_registra_distancias_y_predecesores_anteriores_y_nuevos(self):
+        red = Grafo(tuple("ABCD"), (
+            Arista(11, "A", "B", 5, True),
+            Arista(12, "A", "C", 1, True),
+            Arista(13, "C", "B", 1, True),
+            Arista(14, "A", "D", 10, True),
+            Arista(15, "C", "D", 20, True),
+            Arista(16, "B", "D", 2, True),
+        ))
+        resultado = Dijkstra().ejecutar(Entrada(red, ParametrosDijkstra("A")))
+        detalles = {
+            (paso.detalle.vertice, paso.detalle.arista): paso.detalle
+            for paso in resultado.pasos
+            if paso.detalle.accion in ("relajar", "conservar")
+        }
+
+        primera_b = detalles["B", 11]
+        self.assertEqual(primera_b.accion, "relajar")
+        self.assertEqual(primera_b.distancia_anterior, inf)
+        self.assertEqual(primera_b.distancia_nueva, 5)
+        self.assertIsNone(primera_b.predecesor_anterior)
+        self.assertEqual(primera_b.predecesor_nuevo, ("A", 11))
+
+        mejora_b = detalles["B", 13]
+        self.assertEqual(mejora_b.distancia_anterior, 5)
+        self.assertEqual(mejora_b.distancia_nueva, 2)
+        self.assertEqual(mejora_b.predecesor_anterior, ("A", 11))
+        self.assertEqual(mejora_b.predecesor_nuevo, ("C", 13))
+
+        conservacion_d = detalles["D", 15]
+        self.assertEqual(conservacion_d.accion, "conservar")
+        self.assertEqual(conservacion_d.distancia_anterior, 10)
+        self.assertEqual(conservacion_d.distancia_nueva, 10)
+        self.assertEqual(conservacion_d.predecesor_anterior, ("A", 14))
+        self.assertEqual(conservacion_d.predecesor_nuevo, ("A", 14))
+
+        mejora_d = detalles["D", 16]
+        self.assertEqual(mejora_d.distancia_anterior, 10)
+        self.assertEqual(mejora_d.distancia_nueva, 4)
+        self.assertEqual(mejora_d.predecesor_anterior, ("A", 14))
+        self.assertEqual(mejora_d.predecesor_nuevo, ("B", 16))
+
+        ids_originales = {arista.identificador for arista in red.aristas}
+        relajaciones = [
+            paso for paso in resultado.pasos
+            if paso.detalle.accion in ("relajar", "conservar")
+        ]
+        for paso in relajaciones:
+            self.assertIn(paso.detalle.arista, ids_originales)
+            self.assertEqual(paso.aristas_destacadas, (paso.detalle.arista,))
+            if paso.detalle.accion == "conservar":
+                self.assertEqual(
+                    paso.detalle.predecesor_nuevo,
+                    paso.detalle.predecesor_anterior,
+                )
+            else:
+                self.assertEqual(
+                    paso.detalle.predecesor_nuevo,
+                    (paso.vertices_destacados[0], paso.detalle.arista),
+                )
 
     def test_red_mixta_paralelas_cero_inalcanzables_y_origen_igual_destino(self):
         red = Grafo(tuple("ABCDE"), (

@@ -46,6 +46,8 @@ class DetalleDijkstra:
     distancia_anterior: float | None
     distancia_nueva: float
     permanentes: tuple[str, ...]
+    predecesor_anterior: tuple[str, int] | None
+    predecesor_nuevo: tuple[str, int] | None
 
 
 class Dijkstra(Algoritmo[ParametrosDijkstra, SolucionDijkstra, DetalleDijkstra]):
@@ -71,7 +73,9 @@ class Dijkstra(Algoritmo[ParametrosDijkstra, SolucionDijkstra, DetalleDijkstra])
         permanentes: list[str] = []
         fijados: set[str] = set()
         pasos = [Paso(1, "Se asigna cero al origen e infinito a los demás vértices.",
-                      (parametros.origen,), (), DetalleDijkstra("iniciar", parametros.origen, None, None, 0.0, ()))]
+                      (parametros.origen,), (), DetalleDijkstra(
+                          "iniciar", parametros.origen, None, None, 0.0, (), None, None
+                      ))]
         while len(fijados) < len(grafo.vertices):
             actual = min((v for v in grafo.vertices if v not in fijados),
                          key=lambda v: (distancias[v] is None, distancias[v] or Fraction(0)))
@@ -80,26 +84,31 @@ class Dijkstra(Algoritmo[ParametrosDijkstra, SolucionDijkstra, DetalleDijkstra])
                 break
             fijados.add(actual)
             permanentes.append(actual)
+            predecesor_actual = predecesores.get(actual)
             pasos.append(Paso(len(pasos) + 1, "Se fija el vértice temporal de menor distancia.",
                               (actual,), (), DetalleDijkstra("fijar", actual, None, None,
-                                                           distancia_publica(actual), tuple(permanentes))))
+                                                           distancia_publica(actual), tuple(permanentes),
+                                                           predecesor_actual, predecesor_actual)))
             for vecino, arista in vecinos[actual]:
                 if vecino in fijados:
                     continue
                 assert arista.peso is not None
                 candidato = distancia_actual + Fraction(str(arista.peso))
                 anterior = distancias[vecino]
+                predecesor_anterior = predecesores.get(vecino)
                 mejora = anterior is None or candidato < anterior
                 if mejora:
                     distancias[vecino] = candidato
                     predecesores[vecino] = (actual, arista.identificador)
+                predecesor_nuevo = predecesores.get(vecino)
                 pasos.append(Paso(
                     len(pasos) + 1,
                     "Se mejora la distancia temporal." if mejora else "Se conserva la distancia conocida.",
                     (actual, vecino), (arista.identificador,),
                     DetalleDijkstra("relajar" if mejora else "conservar", vecino, arista.identificador,
                                     inf if anterior is None else como_float(anterior),
-                                    distancia_publica(vecino), tuple(permanentes)),
+                                    distancia_publica(vecino), tuple(permanentes),
+                                    predecesor_anterior, predecesor_nuevo),
                 ))
         inalcanzables = tuple(v for v in grafo.vertices if distancias[v] is None)
         ruta: tuple[str, ...] | None = None
@@ -118,8 +127,11 @@ class Dijkstra(Algoritmo[ParametrosDijkstra, SolucionDijkstra, DetalleDijkstra])
         if parametros.destino in inalcanzables:
             descripcion = "El destino es inalcanzable desde el origen."
         terminal = parametros.destino if parametros.destino is not None else parametros.origen
+        predecesor_terminal = predecesores.get(terminal)
         pasos.append(Paso(len(pasos) + 1, descripcion, ruta or (), ids or (),
-                          DetalleDijkstra("finalizar", terminal, None, None, distancia_publica(terminal), tuple(permanentes))))
+                          DetalleDijkstra("finalizar", terminal, None, None,
+                                          distancia_publica(terminal), tuple(permanentes),
+                                          predecesor_terminal, predecesor_terminal)))
         return Resultado(SolucionDijkstra(parametros.origen, parametros.destino, ruta, ids, costo,
                                          {v: distancia_publica(v) for v in grafo.vertices},
                                          predecesores, inalcanzables), tuple(pasos))

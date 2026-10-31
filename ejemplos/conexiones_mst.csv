@@ -1,0 +1,11 @@
+origen,destino,peso,dirigida
+A,B,1,false
+B,C,2,false
+A,C,3,false
+C,D,4,false
+B,D,5,false
+D,E,6,false
+C,E,7,false
+E,F,8,false
+D,F,9,false
+A,F,12,false
