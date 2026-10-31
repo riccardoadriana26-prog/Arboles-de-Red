@@ -20,6 +20,10 @@ from arboles_de_red.reconstruccion import (
 )
 from arboles_de_red.formato_visual import formatear_numero
 from arboles_de_red.presentacion_pasos import resumir_paso
+from arboles_de_red.proyeccion_resultados import (
+    ProyeccionArbol, ProyeccionCPM, ProyeccionDijkstra, ProyeccionFlujo,
+    ProyeccionPERT, proyectar_resultado,
+)
 from arboles_de_red.seleccion import SelectorAlgoritmos
 from arboles_de_red.registro import ErrorPreparacionEntrada
 from arboles_de_red.validacion_csv import ErrorValidacionCSV
@@ -29,6 +33,7 @@ from arboles_de_red.visualizador_pyvis import FormatoGrafo, VisualizadorPyVis
 _CLAVES_EJECUCION = (
     "hu07_entrada", "hu07_resultado", "hu07_reconstruccion", "hu07_algoritmo",
     "hu07_parametros", "hu07_posiciones_ejecucion", "hu07_ejecucion_key",
+    "hu08_proyeccion", "hu08_vista", "hu08_destino",
 )
 _ALGORITMOS_POR_FORMATO = {
     "Conexiones": ("prim", "kruskal", "dijkstra", "flujo_maximo"),
@@ -70,6 +75,8 @@ def invalidar_si_cambia_la_carga(session_state, clave_carga: str) -> bool:
     """Invalida antes de parsear, incluso si el archivo nuevo no valida."""
     anterior = session_state.get("hu07_clave_carga")
     if anterior is not None and anterior != clave_carga:
+        session_state.pop("hu08_entrada_original", None)
+        session_state.pop("hu08_entrada_clave", None)
         for clave in _CLAVES_EJECUCION:
             session_state.pop(clave, None)
         clave_slider = session_state.pop("hu07_slider_key", None)
@@ -130,6 +137,37 @@ def _mostrar_estado(estado_visual, entrada):
         st.json(_serializable(estado_visual.estado, compactar_numeros=compactar))
 
 
+def resumen_resultado(proyeccion, resultado) -> tuple[tuple[str, str], ...]:
+    """Describe la solución final sin consultar sus pasos ni enumerar rutas críticas."""
+    nombres = {"prim": "Prim", "kruskal": "Kruskal", "dijkstra": "Dijkstra",
+               "flujo_maximo": "Ford–Fulkerson", "cpm": "CPM", "pert": "PERT"}
+    campos = [("Algoritmo", nombres[proyeccion.algoritmo])]
+    if isinstance(proyeccion, ProyeccionArbol):
+        campos.extend((("Aristas del árbol", str(len(proyeccion.aristas))),
+                       ("Peso total", formatear_numero(proyeccion.peso_total))))
+    elif isinstance(proyeccion, ProyeccionDijkstra):
+        campos.extend((("Origen", proyeccion.origen),
+                       ("Destino consultado", proyeccion.destino or "Sin seleccionar")))
+        if proyeccion.destino is None:
+            campos.append(("Ruta", "Seleccioná un destino para consultar la ruta final"))
+        elif proyeccion.ruta is None:
+            campos.append(("Ruta", "Destino inalcanzable desde el origen"))
+        else:
+            campos.extend((("Ruta", " → ".join(proyeccion.ruta)),
+                           ("Costo", formatear_numero(proyeccion.costo))))
+    elif isinstance(proyeccion, ProyeccionFlujo):
+        campos.extend((("Flujo máximo", formatear_numero(proyeccion.flujo_maximo)),
+                       ("Capacidad del corte mínimo", formatear_numero(proyeccion.capacidad_corte))))
+    elif isinstance(proyeccion, (ProyeccionCPM, ProyeccionPERT)):
+        duracion = (proyeccion.duracion_proyecto if isinstance(proyeccion, ProyeccionCPM)
+                    else proyeccion.duracion_esperada)
+        campos.extend((("Duración total" if isinstance(proyeccion, ProyeccionCPM) else "Duración esperada",
+                        formatear_numero(duracion)),
+                       ("Actividades críticas", str(len(proyeccion.actividades_criticas))),
+                       ("Cantidad de rutas críticas", str(resultado.solucion.rutas_criticas.cantidad))))
+    return tuple(campos)
+
+
 def main():
     st.set_page_config(page_title="Visualizador de grafos", layout="wide")
     st.title("Visualización y recorrido de algoritmos")
@@ -145,17 +183,19 @@ def main():
     contenido_bytes = archivo.getvalue()
     clave_visual = f"{formato}:{sha256(contenido_bytes).hexdigest()}"
     invalidar_si_cambia_la_carga(st.session_state, clave_visual)
-    try:
-        contenido = contenido_bytes.decode("utf-8-sig")
-    except UnicodeDecodeError:
-        st.error("El archivo debe estar codificado como UTF-8.")
-        return
-
-    try:
-        entrada_original = _PROCESADORES[formato]().preparar_entrada(contenido)
-    except ErrorValidacionCSV as error:
-        st.error(str(error))
-        return
+    if st.session_state.get("hu08_entrada_clave") != clave_visual:
+        try:
+            contenido = contenido_bytes.decode("utf-8-sig")
+            entrada_original = _PROCESADORES[formato]().preparar_entrada(contenido)
+        except UnicodeDecodeError:
+            st.error("El archivo debe estar codificado como UTF-8.")
+            return
+        except ErrorValidacionCSV as error:
+            st.error(str(error))
+            return
+        st.session_state["hu08_entrada_original"] = entrada_original
+        st.session_state["hu08_entrada_clave"] = clave_visual
+    entrada_original = st.session_state["hu08_entrada_original"]
 
     grafo = entrada_original.grafo
     st.caption(f"Archivo: {archivo.name}")
@@ -255,7 +295,10 @@ def main():
                     "hu07_posiciones_ejecucion": posiciones,
                     "hu07_ejecucion_key": clave,
                     slider_key: 0,
+                    "hu08_vista": "Recorrido",
                 })
+                st.session_state.pop("hu08_proyeccion", None)
+                st.session_state.pop("hu08_destino", None)
         except (ErrorPreparacionEntrada, ErrorReconstruccion, ValueError) as error:
             st.error(str(error))
 
@@ -265,6 +308,41 @@ def main():
 
     reconstruccion = st.session_state["hu07_reconstruccion"]
     cantidad = reconstruccion.cantidad_pasos
+    # Desvincula la clave del ciclo de limpieza de widgets cuando el slider se
+    # oculta al cambiar de vista; el índice sigue teniendo una sola fuente.
+    st.session_state[slider_key] = st.session_state.get(slider_key, 0)
+    if "hu08_destino" in st.session_state:
+        st.session_state["hu08_destino"] = st.session_state["hu08_destino"]
+    vista = st.radio("Vista", ("Datos originales", "Recorrido", "Resultado"),
+                     horizontal=True, key="hu08_vista")
+    if vista == "Datos originales":
+        visualizador.mostrar_grafo(entrada_original, formato, arista_seleccionada, posiciones)
+        return
+    if vista == "Resultado":
+        try:
+            resultado = st.session_state["hu07_resultado"]
+            if "hu08_proyeccion" not in st.session_state:
+                st.session_state["hu08_proyeccion"] = proyectar_resultado(
+                    st.session_state["hu07_entrada"], resultado, st.session_state["hu07_algoritmo"],
+                )
+            proyeccion = st.session_state["hu08_proyeccion"]
+            if isinstance(proyeccion, ProyeccionDijkstra) and proyeccion.destino_ejecucion is None:
+                destino_consulta = st.selectbox("Destino del resultado", vertices, index=None,
+                                                placeholder="Elegí un destino", key="hu08_destino")
+                if destino_consulta is not None:
+                    proyeccion = proyeccion.consultar_destino(destino_consulta)
+            st.subheader("Resultado final")
+            for etiqueta, valor in resumen_resultado(proyeccion, resultado):
+                st.markdown(f"**{etiqueta}:** {valor}")
+            red = visualizador.construir_red_resultado(
+                st.session_state["hu07_entrada"], formato, proyeccion,
+                st.session_state["hu07_posiciones_ejecucion"],
+            )
+            st.iframe(visualizador.generar_html(red), height=730, tab_index=0)
+        except ValueError as error:
+            st.error(str(error))
+        return
+
     actual = min(max(int(st.session_state.get(slider_key, 0)), 0), cantidad)
     col_anterior, col_numero, col_siguiente = st.columns((1, 2, 1))
     col_anterior.button(
@@ -276,8 +354,11 @@ def main():
         "Siguiente", disabled=actual >= cantidad, key=f"hu07_siguiente_{clave[:12]}",
         on_click=_mover_paso, args=(slider_key, 1, cantidad),
     )
-    actual = st.slider("Seleccionar paso", min_value=0, max_value=cantidad, step=1,
-                       key=slider_key, help="0 muestra el estado inicial antes del primer evento.")
+    if cantidad:
+        actual = st.slider("Seleccionar paso", min_value=0, max_value=cantidad, step=1,
+                           key=slider_key, help="0 muestra el estado inicial antes del primer evento.")
+    else:
+        st.info("La ejecución no contiene pasos registrados.")
 
     try:
         estado_visual = reconstruccion.estado_en(actual)
