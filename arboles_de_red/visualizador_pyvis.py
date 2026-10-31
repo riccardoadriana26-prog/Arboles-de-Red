@@ -12,6 +12,10 @@ from .algoritmo import Entrada
 from .grafo import Grafo
 from .formato_visual import formatear_numero
 from .parametros import EstimacionesPERT, ParametrosCPM, ParametrosPERT
+from .proyeccion_resultados import (
+    ProyeccionArbol, ProyeccionCPM, ProyeccionDijkstra, ProyeccionFlujo,
+    ProyeccionPERT, ProyeccionResultado, validar_proyeccion,
+)
 from .reconstruccion import (
     EstadoDijkstra,
     EstadoExpansion,
@@ -230,6 +234,121 @@ class VisualizadorPyVis:
                 }
             )
         )
+        return red
+
+    def construir_red_resultado(
+        self,
+        entrada: Entrada[object],
+        formato: FormatoGrafo,
+        proyeccion: ProyeccionResultado,
+        posiciones: Mapping[str, tuple[float, float]] | None = None,
+    ) -> Network:
+        """Representa la solución final sobre la red original, sin estados del recorrido.
+
+        Los valores y la pertenencia a la solución provienen de la proyección;
+        no se consultan pasos, resolutores ni reconstrucciones. Los elementos
+        secundarios siguen presentes y conservan sus metadatos originales.
+        """
+        validar_proyeccion(entrada, proyeccion)
+        if isinstance(proyeccion, (ProyeccionCPM, ProyeccionPERT)):
+            esperado = "CPM" if isinstance(proyeccion, ProyeccionCPM) else "PERT"
+            if formato != esperado:
+                raise ValueError(f"La proyección requiere formato {esperado}.")
+            vertices_solucion = proyeccion.actividades_criticas
+            aristas_solucion = frozenset(proyeccion.aristas_criticas)
+            color = "#dc3545"
+            duracion = (proyeccion.duracion_proyecto if isinstance(proyeccion, ProyeccionCPM)
+                        else proyeccion.duracion_esperada)
+            resumen = f"Duración {'del proyecto' if formato == 'CPM' else 'esperada'}: {formatear_numero(duracion)}"
+            if set(proyeccion.actividades) != set(entrada.grafo.vertices):
+                raise ValueError("La planificación final debe cubrir las actividades originales.")
+        elif isinstance(proyeccion, (ProyeccionArbol, ProyeccionDijkstra, ProyeccionFlujo)):
+            if formato != "Conexiones":
+                raise ValueError("La proyección requiere formato Conexiones.")
+            color = "#198754"
+            if isinstance(proyeccion, ProyeccionArbol):
+                vertices_solucion = proyeccion.vertices
+                aristas_solucion = frozenset(proyeccion.aristas)
+                resumen = f"Peso total del árbol: {formatear_numero(proyeccion.peso_total)}"
+            elif isinstance(proyeccion, ProyeccionDijkstra):
+                vertices_solucion = frozenset(proyeccion.ruta or ())
+                aristas_solucion = frozenset(proyeccion.aristas_ruta or ())
+                color = "#2a9d8f"
+                if proyeccion.destino is None:
+                    resumen = "Sin destino consultado"
+                elif proyeccion.ruta is None:
+                    resumen = f"Destino {proyeccion.destino}: inalcanzable desde {proyeccion.origen}"
+                else:
+                    resumen = f"Costo final de la ruta: {formatear_numero(proyeccion.costo)}"
+            else:
+                if set(proyeccion.arcos) != {a.identificador for a in entrada.grafo.aristas}:
+                    raise ValueError("El flujo final debe cubrir exactamente las aristas originales.")
+                aristas_solucion = frozenset(i for i, a in proyeccion.arcos.items() if a.flujo > 0)
+                vertices_solucion = frozenset(v for i in aristas_solucion
+                                             for v in (proyeccion.arcos[i].origen, proyeccion.arcos[i].destino))
+                resumen = f"Flujo máximo: {formatear_numero(proyeccion.flujo_maximo)}"
+        else:
+            raise TypeError(f"Proyección final no admitida: {type(proyeccion).__name__}.")
+
+        if not vertices_solucion <= set(entrada.grafo.vertices):
+            raise ValueError("La solución refiere vértices inexistentes.")
+        if not aristas_solucion <= {a.identificador for a in entrada.grafo.aristas}:
+            raise ValueError("La solución refiere aristas inexistentes.")
+
+        # Construcción base compartida con HU-04, sin overlays de HU-07.
+        red = self.construir_red(entrada, formato, posiciones=posiciones)
+        for nodo in red.nodes:
+            vertice = nodo["id"]
+            pertenece = vertice in vertices_solucion
+            nodo["color"] = color if pertenece else "#d8dde5"
+            nodo["font"] = {"color": "#ffffff" if pertenece else "#667085"}
+            if isinstance(proyeccion, ProyeccionDijkstra):
+                roles = []
+                if vertice == proyeccion.origen:
+                    roles.append("Origen")
+                    if pertenece:
+                        nodo["color"] = "#2563eb"
+                if vertice == proyeccion.destino:
+                    roles.append("Destino")
+                    if pertenece and vertice != proyeccion.origen:
+                        nodo["color"] = "#7c3aed"
+                if roles:
+                    rol = " y ".join(roles)
+                    nodo["label"] += f"\n{rol}"
+                    nodo["title"] += f"\n{rol}"
+            elif isinstance(proyeccion, (ProyeccionCPM, ProyeccionPERT)):
+                if isinstance(proyeccion, ProyeccionPERT):
+                    datos = _atributos_pert(vertice, proyeccion.estimaciones[vertice])
+                    nodo["label"], nodo["title"] = datos.etiqueta, datos.detalle
+                    tiempo = formatear_numero(proyeccion.tiempos_esperados[vertice])
+                    varianza = formatear_numero(proyeccion.varianzas[vertice])
+                    nodo["label"] += f"\nE: {tiempo} | Var: {varianza}"
+                    nodo["title"] += f"\nTiempo esperado: {tiempo}\nVarianza: {varianza}"
+                valores = proyeccion.actividades[vertice]
+                pares = (("IC", valores.ic), ("TC", valores.tc), ("IL", valores.il),
+                         ("TL", valores.tl), ("Holgura", valores.holgura))
+                nodo["label"] += "\n" + " | ".join(f"{nombre}={formatear_numero(valor)}" for nombre, valor in pares)
+                nodo["title"] += "\n" + "\n".join(f"{nombre}: {formatear_numero(valor)}" for nombre, valor in pares)
+                nodo["title"] += "\nActividad crítica" if pertenece else "\nActividad no crítica"
+            nodo["title"] += f"\nSolución final\n{resumen}"
+
+        por_id = {a["id"]: a for a in red.edges}
+        for arista in entrada.grafo.aristas:
+            elemento = por_id[f"arista-{arista.identificador}"]
+            pertenece = arista.identificador in aristas_solucion
+            elemento["color"] = {"color": color if pertenece else "#8492a6",
+                                 "opacity": 0.95 if pertenece else 0.25}
+            elemento["width"] = 3.0 if pertenece else 0.8
+            if isinstance(proyeccion, ProyeccionFlujo):
+                arco = proyeccion.arcos[arista.identificador]
+                capacidad = formatear_numero(arco.capacidad_original)
+                flujo = formatear_numero(arco.flujo)
+                elemento["title"] += f"\nCapacidad original: {capacidad}\nFlujo final: {flujo} / {capacidad}"
+            elif isinstance(proyeccion, (ProyeccionCPM, ProyeccionPERT)):
+                elemento["title"] += "\nPrecedencia crítica" if pertenece else "\nPrecedencia no crítica"
+            elif pertenece:
+                elemento["title"] += ("\nPertenece al árbol final" if isinstance(proyeccion, ProyeccionArbol)
+                                      else "\nPertenece a la ruta final")
         return red
 
     def _atributos_vertice_estado(self, vertice, datos, estado):
