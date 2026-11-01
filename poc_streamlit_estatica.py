@@ -487,7 +487,7 @@ def main():
         actual = st.slider("Seleccionar paso", min_value=0, max_value=cantidad, step=1,
                            key=slider_key, help="0 muestra el estado inicial antes del primer evento.")
     else:
-        st.info("The execution contains no recorded steps.")
+        st.info("La ejecución no contiene pasos registrados..")
 
     try:
         estado_visual = reconstruccion.estado_en(actual)
