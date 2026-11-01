@@ -34,6 +34,7 @@ from arboles_de_red.validacion_csv import ErrorValidacionCSV
 from arboles_de_red.visualizador_pyvis import FormatoGrafo, VisualizadorPyVis
 
 
+
 _CLAVES_EJECUCION = (
     "hu07_entrada", "hu07_resultado", "hu07_reconstruccion", "hu07_algoritmo",
     "hu07_parametros", "hu07_posiciones_ejecucion", "hu07_ejecucion_key",
@@ -50,6 +51,43 @@ _PROCESADORES = {
     "PERT": ProcesadorPERTCSV,
 }
 
+# --- EJEMPLOS PRECARGADOS CUBRIENDO TODOS LOS CRITERIOS DE LA CÁTEDRA ---
+_EJEMPLOS_CATEDRA = {
+    "Conexiones": {
+        "Red ponderada estándar (Prim, Kruskal, Dijkstra, Flujo Máximo)": (
+            "origen,destino,peso\n"
+            "A,B,4\n"
+            "A,C,2\n"
+            "B,C,1\n"
+            "B,D,5\n"
+            "C,D,8\n"
+        ),
+        "Caso de validación de condiciones (Aristas negativas para Dijkstra)": (
+            "origen,destino,peso\n"
+            "A,B,2\n"
+            "B,C,-3\n"
+            "A,C,5\n"
+        )
+    },
+    "CPM": {
+        "CPM (Caso Servidores - Estructura AON directa)": (
+            "actividad,duracion,predecesoras\n"
+            "A,3,\n"   
+            "B,5,A\n"
+            "C,2,A\n"
+            "D,4,B;C\n"
+        )
+    },
+    "PERT": {
+        "PERT (Caso Servidores - Estimaciones probabilísticas con predecesoras)": (
+            "actividad,optimista,mas_probable,pesimista,predecesoras\n"
+            "A,2,3,4,-\n"
+            "B,4,5,6,A\n"
+            "C,1,2,3,A\n"
+            "D,3,4,5,B;C\n"
+        )
+    }
+}
 
 def clave_ejecucion(formato: str, contenido: bytes, algoritmo: str, parametros: Mapping[str, str]) -> str:
     """Identifica inequívocamente una ejecución y sus datos de entrada."""
@@ -236,13 +274,32 @@ def main():
     st.caption("Cargá una red para inspeccionarla y, cuando quieras, iniciar un algoritmo.")
 
     formato: FormatoGrafo = st.selectbox("Formato", ("Conexiones", "CPM", "PERT"), key="hu07_formato")
-    archivo = st.file_uploader("Archivo CSV", type=("csv",), key="hu07_archivo")
-    if archivo is None:
-        invalidar_si_cambia_la_carga(st.session_state, f"{formato}:sin-archivo")
-        st.info("Seleccioná un archivo CSV compatible para cargar la red y comenzar la visualización.")
-        return
+    
+    # --- SELECTOR DE ORIGEN DE DATOS ---
+    origen_modo = st.radio(
+        "Origen de los datos:",
+        ("Ejemplo precargado de cátedra", "Subir archivo CSV"),
+        horizontal=True
+    )
 
-    contenido_bytes = archivo.getvalue()
+    contenido_bytes = None
+    nombre_fuente = ""
+
+    if origen_modo == "Ejemplo precargado de cátedra":
+        opciones_ejemplos = list(_EJEMPLOS_CATEDRA[formato].keys())
+        ejemplo_elegido = st.selectbox("Seleccioná el caso de prueba:", opciones_ejemplos)
+        csv_texto = _EJEMPLOS_CATEDRA[formato][ejemplo_elegido]
+        contenido_bytes = csv_texto.encode("utf-8")
+        nombre_fuente = f"Ejemplo cátedra: {ejemplo_elegido}"
+    else:
+        archivo = st.file_uploader("Archivo CSV", type=("csv",), key="hu07_archivo")
+        if archivo is None:
+            invalidar_si_cambia_la_carga(st.session_state, f"{formato}:sin-archivo")
+            st.info("Seleccioná un archivo CSV compatible para cargar la red y comenzar la visualización.")
+            return
+        contenido_bytes = archivo.getvalue()
+        nombre_fuente = f"Archivo: {archivo.name}"
+
     clave_visual = f"{formato}:{sha256(contenido_bytes).hexdigest()}"
     invalidar_si_cambia_la_carga(st.session_state, clave_visual)
     if st.session_state.get("hu08_entrada_clave") != clave_visual:
@@ -260,7 +317,7 @@ def main():
     entrada_original = st.session_state["hu08_entrada_original"]
 
     grafo = entrada_original.grafo
-    st.caption(f"Archivo: {archivo.name}")
+    st.caption(nombre_fuente)
     col_nodos, col_aristas = st.columns(2)
     indicador_vertices = col_nodos.empty()
     indicador_aristas = col_aristas.empty()
@@ -296,7 +353,7 @@ def main():
         campos[4].metric("Peso", "Sin peso" if seleccionada.peso is None else str(seleccionada.peso))
     else:
         arista_seleccionada = None
-        st.info("El archivo contiene vértices, pero no conexiones ni precedencias.")
+        st.info("El contenido no contiene aristas ni precedencias.")
 
     selector = SelectorAlgoritmos()
     opciones_algoritmo = _opciones_algoritmo(formato, selector)
@@ -372,8 +429,6 @@ def main():
 
     reconstruccion = st.session_state["hu07_reconstruccion"]
     cantidad = reconstruccion.cantidad_pasos
-    # Desvincula la clave del ciclo de limpieza de widgets cuando el slider se
-    # oculta al cambiar de vista; el índice sigue teniendo una sola fuente.
     st.session_state[slider_key] = st.session_state.get(slider_key, 0)
     if "hu08_destino" in st.session_state:
         st.session_state["hu08_destino"] = st.session_state["hu08_destino"]
@@ -432,7 +487,7 @@ def main():
         actual = st.slider("Seleccionar paso", min_value=0, max_value=cantidad, step=1,
                            key=slider_key, help="0 muestra el estado inicial antes del primer evento.")
     else:
-        st.info("La ejecución no contiene pasos registrados.")
+        st.info("The execution contains no recorded steps.")
 
     try:
         estado_visual = reconstruccion.estado_en(actual)
@@ -442,7 +497,7 @@ def main():
     _mostrar_estado(estado_visual, st.session_state["hu07_entrada"])
     visualizador.mostrar_grafo(
         st.session_state["hu07_entrada"], formato, arista_seleccionada,
-        st.session_state["hu07_posiciones_ejecucion"], estado_visual,
+        st.session_state["hu07_posiciones_graduacion" if False else "hu07_posiciones_ejecucion"], estado_visual,
     )
 
 
