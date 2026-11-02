@@ -86,22 +86,26 @@ _EJEMPLOS_CATEDRA = {
     "CPM": {
         "CPM (Caso Servidores - Estructura AON directa)": (
             "actividad,duracion,predecesoras\n"
-            "A,3,\n"   
-            "B,5,A\n"
-            "C,2,A\n"
-            "D,4,B;C\n"
+             "A,5,\n"     
+            "B,7,A\n"    # Duración según pág. 9 del PDF
+            "C,4,A\n"    # Duración según pág. 9 del PDF
+            "D,6,B;C\n"  # Duración según pág. 9 del PDF
+            "E,3,D\n"
         )
     },
+   
     "PERT": {
         "PERT (Caso Servidores - Estimaciones probabilísticas con predecesoras)": (
             "actividad,optimista,mas_probable,pesimista,predecesoras\n"
-            "A,2,3,4,-\n"
-            "B,4,5,6,A\n"
-            "C,1,2,3,A\n"
-            "D,3,4,5,B;C\n"
+            "A,3,5,7,\n"
+            "B,5,7,10,A\n"
+            "C,2,4,6,A\n"
+            "D,4,6,9,B;C\n"
+            "E,2,3,4,D\n"
         )
     }
 }
+
 
 def clave_ejecucion(formato: str, contenido: bytes, algoritmo: str, parametros: Mapping[str, str]) -> str:
     material = {
