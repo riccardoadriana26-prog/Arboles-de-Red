@@ -17,6 +17,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+st.markdown(
+    """
+    <style>
+        /* Oculta el botón X dentro de la barra lateral expandida */
+        [data-testid="stSidebarCollapseButton"] {
+            display: none !important;
+        }
+        
+        /* Oculta el botón > que aparece arriba a la izquierda cuando se intenta cerrar */
+        [data-testid="collapsedControl"] {
+            display: none !important;
+        }
+        
+        /* Oculta selectores antiguos o variantes de botones de cabecera */
+        button[kind="header"] {
+            display: none !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # Ocultar marca de agua de Streamlit y elementos de menú predeterminados
 hide_streamlit_style = """
     <style>
